@@ -1,0 +1,206 @@
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { FaUser, FaLock } from "react-icons/fa";
+
+// Color Palette
+// primary:   #76C893  (Fresh Green)
+// secondary: #FFB74D  (Light Orange)
+// accent:    #FF6F61  (Coral Red)
+// background:#F9F5EF  (Warm Cream)
+// text:      #333333  (Dark Gray)
+
+export default function Login() {
+    const [formData, setFormData] = useState({
+        email: "",
+        password: "",
+    });
+
+    const [errors, setErrors] = useState({
+        email: "",
+        password: "",
+    });
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Handle input changes
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+
+        // Clear error when user starts typing
+        if (errors[name]) {
+            setErrors((prev) => ({
+                ...prev,
+                [name]: "",
+            }));
+        }
+    };
+
+    // Validation functions
+    const validateEmail = (email) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email) return "Email is required";
+        if (!emailRegex.test(email))
+            return "Please enter a valid email address";
+        return "";
+    };
+
+    const validatePassword = (password) => {
+        if (!password) return "Password is required";
+        if (password.length < 6)
+            return "Password must be at least 6 characters long";
+        return "";
+    };
+
+    // Handle form submission
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+
+        // Validate all fields
+        const emailError = validateEmail(formData.email);
+        const passwordError = validatePassword(formData.password);
+
+        const newErrors = {
+            email: emailError,
+            password: passwordError,
+        };
+
+        setErrors(newErrors);
+
+        // Check if there are any validation errors
+        const hasErrors = Object.values(newErrors).some(
+            (error) => error !== ""
+        );
+
+        if (!hasErrors) {
+            // Form is valid, log the values
+            console.log("Login form submitted with:", {
+                email: formData.email,
+                password: formData.password,
+            });
+
+            // Here you would typically make an API call to authenticate the user
+            // For now, we'll just simulate a successful submission
+            setTimeout(() => {
+                console.log("Login successful!");
+                setIsSubmitting(false);
+            }, 1000);
+        } else {
+            setIsSubmitting(false);
+        }
+    };
+
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-[#F9F5EF] p-4">
+            <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-md">
+                <h2 className="text-2xl font-bold text-[#333333] mb-6 text-center">
+                    Smart Grocery AI Login
+                </h2>
+                <form
+                    className="grid grid-cols-1 gap-6"
+                    onSubmit={handleSubmit}
+                >
+                    {/* Email Field */}
+                    <div className="flex flex-col gap-1">
+                        <div
+                            className={`grid grid-cols-[auto_1fr] items-center gap-3 border rounded-lg p-2 focus-within:ring-2 ${
+                                errors.email
+                                    ? "border-[#FF6F61] focus-within:ring-[#FF6F61]"
+                                    : "border-gray-300 focus-within:ring-[#76C893]"
+                            }`}
+                        >
+                            <FaUser className="text-[#76C893]" size={20} />
+                            <div className="flex flex-col">
+                                <label
+                                    htmlFor="email"
+                                    className="text-sm font-medium text-[#333333]"
+                                >
+                                    Email
+                                </label>
+                                <input
+                                    id="email"
+                                    name="email"
+                                    type="email"
+                                    value={formData.email}
+                                    onChange={handleInputChange}
+                                    placeholder="you@example.com"
+                                    className="w-full px-2 py-1 outline-none text-[#333333]"
+                                    required
+                                />
+                            </div>
+                        </div>
+                        {errors.email && (
+                            <p className="text-sm text-[#FF6F61] px-2">
+                                {errors.email}
+                            </p>
+                        )}
+                    </div>
+
+                    {/* Password Field */}
+                    <div className="flex flex-col gap-1">
+                        <div
+                            className={`grid grid-cols-[auto_1fr] items-center gap-3 border rounded-lg p-2 focus-within:ring-2 ${
+                                errors.password
+                                    ? "border-[#FF6F61] focus-within:ring-[#FF6F61]"
+                                    : "border-gray-300 focus-within:ring-[#FF6F61]"
+                            }`}
+                        >
+                            <FaLock className="text-[#FF6F61]" size={20} />
+                            <div className="flex flex-col">
+                                <label
+                                    htmlFor="password"
+                                    className="text-sm font-medium text-[#333333]"
+                                >
+                                    Password
+                                </label>
+                                <input
+                                    id="password"
+                                    name="password"
+                                    type="password"
+                                    value={formData.password}
+                                    onChange={handleInputChange}
+                                    placeholder="********"
+                                    className="w-full px-2 py-1 outline-none text-[#333333]"
+                                    required
+                                />
+                            </div>
+                        </div>
+                        {errors.password && (
+                            <p className="text-sm text-[#FF6F61] px-2">
+                                {errors.password}
+                            </p>
+                        )}
+                    </div>
+
+                    {/* Login Button */}
+                    <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className={`flex justify-center items-center py-2 rounded-lg font-semibold transition-colors duration-200 text-white ${
+                            isSubmitting
+                                ? "bg-gray-400 cursor-not-allowed"
+                                : "bg-[#76C893] hover:bg-[#FFB74D]"
+                        }`}
+                    >
+                        {isSubmitting ? "Logging in..." : "Login"}
+                    </button>
+
+                    {/* Register Link */}
+                    <p className="text-center text-sm text-[#333333]">
+                        Don’t have an account?{" "}
+                        <Link
+                            to="/signup"
+                            className="font-medium text-[#76C893] hover:underline"
+                        >
+                            Register
+                        </Link>
+                    </p>
+                </form>
+            </div>
+        </div>
+    );
+}
