@@ -1,6 +1,9 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FaUser, FaLock } from "react-icons/fa";
+import axios from "axios";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // Color Palette
 // primary:   #76C893  (Fresh Green)
@@ -10,6 +13,8 @@ import { FaUser, FaLock } from "react-icons/fa";
 // text:      #333333  (Dark Gray)
 
 export default function Login() {
+    const navigate = useNavigate();
+
     const [formData, setFormData] = useState({
         email: "",
         password: "",
@@ -56,7 +61,7 @@ export default function Login() {
     };
 
     // Handle form submission
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
 
@@ -77,21 +82,68 @@ export default function Login() {
         );
 
         if (!hasErrors) {
-            // Form is valid, log the values
-            console.log("Login form submitted with:", {
-                email: formData.email,
-                password: formData.password,
-            });
+            try {
+                // Make API call to login
+                const response = await axios.post(
+                    "http://localhost:5000/api/users/login",
+                    {
+                        email: formData.email,
+                        password: formData.password,
+                    },
+                    {
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                    }
+                );
 
-            // Here you would typically make an API call to authenticate the user
-            // For now, we'll just simulate a successful submission
-            setTimeout(() => {
-                console.log("Login successful!");
-                setIsSubmitting(false);
-            }, 1000);
-        } else {
-            setIsSubmitting(false);
+                const result = response.data;
+
+                // Store the authentication token in localStorage
+                if (result.token) {
+                    localStorage.setItem("authToken", result.token);
+                    localStorage.setItem(
+                        "userData",
+                        JSON.stringify(result.user)
+                    );
+                }
+
+                toast.success(`Welcome back, ${result.user.firstName}!`);
+
+                // Reset form
+                setFormData({
+                    email: "",
+                    password: "",
+                });
+
+                // Delay redirect to allow toast to be visible
+                setTimeout(() => {
+                    navigate("/");
+                }, 1500);
+            } catch (error) {
+                console.error("Error during login:", error);
+
+                if (error.response) {
+                    // Server responded with error status
+                    const result = error.response.data;
+                    toast.error(
+                        `Login failed: ${result.message || "Unknown error"}`
+                    );
+                } else if (error.request) {
+                    // Network error
+                    toast.error(
+                        "Network error. Please check your connection and try again."
+                    );
+                } else {
+                    // Other error
+                    toast.error(
+                        "An unexpected error occurred. Please try again."
+                    );
+                }
+            }
         }
+
+        setIsSubmitting(false);
     };
 
     return (
@@ -201,6 +253,18 @@ export default function Login() {
                     </p>
                 </form>
             </div>
+            <ToastContainer
+                position="top-right"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+            />
         </div>
     );
 }

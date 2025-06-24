@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import connectDB from "./middleware/connectDB.js";
+import mainRoutes from "./routes/routes.js";
 
 const app = express();
 
@@ -23,11 +24,11 @@ connectDB();
 // Middleware and routes
 app.use(express.json()); // Parse JSON bodies
 
+// Routes
+app.use("/api", mainRoutes);
 
 // Launch the server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
-
-
