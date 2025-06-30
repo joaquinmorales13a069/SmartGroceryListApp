@@ -28,6 +28,13 @@ const itemSchema = new mongoose.Schema(
         message: "Expiry date must be today or in the future",
       },
     },
+    // Optional nutrition facts skeleton
+    nutrition: {
+      calories: Number,
+      protein: Number,
+      carbs: Number,
+      fat: Number,
+    },
     /**  
      * Optional: who created this catalog entry.
      * Enables basic moderation / ownership checks.
@@ -35,24 +42,13 @@ const itemSchema = new mongoose.Schema(
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-    },
-    // Optional nutrition facts skeleton (expand later if you like)
-    nutrition: {
-      calories: Number,
-      protein: Number,
-      carbs: Number,
-      fat: Number,
-    },
-    disabled: {
-      type: Boolean,
-      default: false, // soft-delete flag for admin use
-    },
+    }
   },
   { timestamps: true }
 );
 
-// Create an index so searches on name run fast (case-insensitive)
-itemSchema.index({ name: 1 });
+// Create index for efficient searching by name
+itemSchema.index({ name: 'text' });
 
 const Item = mongoose.model("Item", itemSchema);
 export default Item;
