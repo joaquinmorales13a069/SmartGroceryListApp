@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaUser, FaLock } from "react-icons/fa";
 import axios from "axios";
@@ -14,6 +14,15 @@ import "react-toastify/dist/ReactToastify.css";
 
 export default function Login() {
     const navigate = useNavigate();
+
+    // Check if user is already authenticated on component mount
+    useEffect(() => {
+        const authToken = localStorage.getItem("authToken");
+        if (authToken) {
+            // User is already authenticated, redirect to home
+            navigate("/");
+        }
+    }, [navigate]);
 
     const [formData, setFormData] = useState({
         email: "",
@@ -243,7 +252,7 @@ export default function Login() {
 
                     {/* Register Link */}
                     <p className="text-center text-sm text-[#333333]">
-                        Don’t have an account?{" "}
+                        Don't have an account?{" "}
                         <Link
                             to="/signup"
                             className="font-medium text-[#76C893] hover:underline"
