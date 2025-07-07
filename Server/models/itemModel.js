@@ -35,20 +35,26 @@ const itemSchema = new mongoose.Schema(
       carbs: Number,
       fat: Number,
     },
-    /**  
+    /**
      * Optional: who created this catalog entry.
      * Enables basic moderation / ownership checks.
      */
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-    }
+    },
+
+    disabled: {
+      type: Boolean,
+      default: false,
+    },
   },
+
   { timestamps: true }
 );
 
 // Create index for efficient searching by name
-itemSchema.index({ name: 'text' });
+itemSchema.index({ name: "text" });
 
 const Item = mongoose.model("Item", itemSchema);
 export default Item;
