@@ -1,5 +1,11 @@
 import express from "express";
-import { createItem, getItems } from "../controllers/itemControllers.js";
+import {
+  createItem,
+  getItems,
+  getItemById,
+  updateItem,
+  deleteItem,
+} from "../controllers/itemControllers.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -9,5 +15,10 @@ router.get("/", authMiddleware, getItems);
 
 // POST /api/items - Create a new item
 router.post("/", authMiddleware, createItem);
+
+// New routes
+router.get("/:itemId", authMiddleware, getItemById);
+router.patch("/:itemId", authMiddleware, updateItem);
+router.delete("/:itemId", authMiddleware, deleteItem);
 
 export default router;
