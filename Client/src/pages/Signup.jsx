@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import {
@@ -15,6 +15,15 @@ import "react-toastify/dist/ReactToastify.css";
 
 export default function Signup() {
     const navigate = useNavigate();
+
+    // Check if user is already authenticated on component mount
+    useEffect(() => {
+        const authToken = localStorage.getItem("authToken");
+        if (authToken) {
+            // User is already authenticated, redirect to home
+            navigate("/");
+        }
+    }, [navigate]);
 
     // Dietary Preferences
     const dietaryPreferences = [

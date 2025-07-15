@@ -11,11 +11,12 @@ dotenv.config();
 
 // Middleware for CORS
 app.use(
-    cors({
-        origin: "http://localhost:5173",
-        methods: ["GET", "POST", "PUT", "DELETE"],
-        allowedHeaders: ["Content-Type", "Authorization"],
-    })
+  cors({
+    origin: ["http://localhost:5173", "http://localhost:5174"],
+
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
 );
 
 // Connect to MongoDB
@@ -30,5 +31,5 @@ app.use("/api", mainRoutes);
 // Launch the server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });
