@@ -2,7 +2,7 @@
 
 @import "tailwindcss";
 
-@theme {
+:root {
     --font-family-sans: "Roboto", sans-serif;
 
     /* Colors */
@@ -29,46 +29,36 @@
     --font-size-xlarge: 20px;
 }
 
-* {
+/* * {
     font-family: var(--font-family-sans);
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+    @apply m-0 p-0 box-border;
+} */
 
 body {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    background-color: #fff;
+    @apply flex flex-col h-screen bg-white;
     font-size: var(--font-size-base);
 }
 
 /* Header */
 .top-header {
+    @apply text-center;
     background-color: var(--color-header-bg);
     color: var(--color-header-text);
     padding: var(--padding);
-    text-align: center;
     font-size: var(--font-size-xlarge);
 }
 
 /* Top Menu */
 .top-menu {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
+    @apply flex items-center justify-start;
     background-color: var(--color-secondary);
     padding-left: var(--sidebar-width);
 }
 
 .top-menu a,
 .menu-right a {
-    color: white;
-    text-decoration: none;
+    @apply text-white no-underline block transition-colors duration-300;
     padding: 15px 30px;
-    display: block;
-    transition: background 0.3s;
 }
 
 .top-menu a:hover,
@@ -78,35 +68,29 @@ body {
 
 /* Right-aligned menu */
 .menu-right {
-    margin-left: auto;
-    display: flex;
+    @apply ml-auto flex;
 }
 
 /* Layout */
 .container {
-    display: flex;
-    flex-grow: 1;
+    @apply flex flex-grow;
 }
 
 /* Sidebar */
 .sidebar {
+    @apply flex flex-col p-4;
     width: var(--sidebar-width);
     background-color: var(--color-sidebar-bg);
     color: var(--color-menu-text);
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
 }
 
 /* Menu Items */
 .menu-item {
-    text-decoration: none;
+    @apply no-underline mb-2.5 transition-all duration-200;
     font-size: var(--font-size-base);
     color: var(--color-menu-text);
-    margin-bottom: 10px;
     padding: 10px 14px;
     border-radius: var(--border-radius);
-    transition: background-color 0.2s, color 0.2s;
 }
 
 .menu-item:hover {
@@ -114,7 +98,7 @@ body {
 }
 
 .menu-item.active {
-    font-weight: bold;
+    @apply font-bold;
     font-size: var(--font-size-large);
     background-color: var(--color-menu-active-bg);
     color: var(--color-menu-active-text);
@@ -122,20 +106,13 @@ body {
 
 /* Main Content */
 .main-content {
-    flex-grow: 1;
-    padding: 1rem;
-    background-color: #fff;
-    overflow-y: auto;
+    @apply flex-grow p-4 bg-white overflow-y-auto;
 }
 
 .main-content-col {
-    flex: 1;
-    border: 3px solid #ccc;
-    padding: 10px;
-    padding-left: 30px;
+    @apply flex-1 border-4 border-gray-300 p-2.5 pl-7;
 }
 
 .main-content-col img {
-    margin-right: 8px;
-    vertical-align: middle;
+    @apply mr-2 align-middle;
 }
