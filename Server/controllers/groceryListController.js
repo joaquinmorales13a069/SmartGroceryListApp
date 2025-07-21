@@ -77,3 +77,25 @@ export const createGroceryList = async (req, res) => {
         });
     }
 };
+
+// DELETE Grocery List - delete a specific grocery list
+export const deleteGroceryList = async (req, res) => {
+    const { id } = req.params;
+    
+    // Check if the grocery list exists
+    const groceryList = await GroceryList.findById(id);
+
+    if (!groceryList) {
+        return res.status(404).json({
+            success: false,
+            message: "Grocery list not found",
+        });
+    }
+
+    // Delete the grocery list by id
+    await GroceryList.findByIdAndDelete(id);
+    res.status(200).json({
+        success: true,
+        message: "Grocery list deleted successfully"
+    })
+}

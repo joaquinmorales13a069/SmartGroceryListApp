@@ -1,6 +1,7 @@
 import express from "express";
 import userRoutes from "./userRoutes.js";
 import itemRoutes from "./itemRoutes.js";
+import groceryListRoutes from "./groceryListRoutes.js";
 
 const router = express.Router();
 
@@ -10,9 +11,7 @@ router.use("/users", userRoutes);
 // Mount item routes at /items
 router.use("/items", itemRoutes);
 
-// Future routes can be added here
-// router.use("/orders", orderRoutes);
-// router.use("/meals", mealRoutes);
-// router.use("/admin", adminRoutes);
+// Mount grocery list routes at /grocery-lists
+router.use("/grocery-lists", groceryListRoutes);
 
 export default router;
