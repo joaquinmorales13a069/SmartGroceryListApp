@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import {
     FiUser,
     FiMail,
@@ -8,11 +10,15 @@ import {
     FiHeart,
 } from "react-icons/fi";
 import { Link } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function Signup() {
-    // Dietry Preferences
+    const navigate = useNavigate();
+
+    // Dietary Preferences
     const dietaryPreferences = [
-        "Dietry preference",
+        "Dietary preference",
         "Gluten Free",
         "Vegetarian",
         "Vegan",
@@ -36,7 +42,7 @@ export default function Signup() {
         favoriteMeal: "",
     });
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         // Check if all required fields are filled
@@ -59,10 +65,10 @@ export default function Signup() {
         // Check if dietary preference is empty or still default
         const isDietaryPreferenceEmpty =
             !formData.dietaryPreferences ||
-            formData.dietaryPreferences === "Dietry preference";
+            formData.dietaryPreferences === "Dietary preference";
 
         if (emptyFields.length > 0 || isDietaryPreferenceEmpty) {
-            alert(
+            toast.error(
                 `Please fill in all required fields: ${emptyFields.join(", ")}${
                     isDietaryPreferenceEmpty
                         ? emptyFields.length > 0
@@ -77,26 +83,82 @@ export default function Signup() {
         // Check if dietary preference is still the default value and change it to "None"
         const updatedFormData = { ...formData };
         if (
-            updatedFormData.dietaryPreferences === "Dietry preference" ||
+            updatedFormData.dietaryPreferences === "Dietary preference" ||
             updatedFormData.dietaryPreferences === ""
         ) {
             updatedFormData.dietaryPreferences = "None";
         }
 
-        // Here you can add your form submission logic
-        console.log("Form submitted:", updatedFormData);
-        // Reset form after submission
-        setFormData({
-            firstName: "",
-            lastName: "",
-            email: "",
-            password: "",
-            dateOfBirth: "",
-            weight: "",
-            height: "",
-            dietaryPreferences: "",
-            favoriteMeal: "",
-        });
+        try {
+            // Send data to backend using axios
+            const response = await axios.post(
+                "http://localhost:5000/api/users/signup",
+                updatedFormData,
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            // axios automatically parses JSON response
+            const result = response.data;
+
+            // Store the authentication token in localStorage
+            if (result.token) {
+                localStorage.setItem("authToken", result.token);
+                localStorage.setItem("userData", JSON.stringify(result.user));
+            }
+
+            toast.success(
+                `Welcome ${formData.firstName}, your account has been created!`
+            );
+            console.log("User created:", result.user);
+
+            // Reset form after successful submission
+            setFormData({
+                firstName: "",
+                lastName: "",
+                email: "",
+                password: "",
+                dateOfBirth: "",
+                weight: "",
+                height: "",
+                dietaryPreferences: "",
+                favoriteMeal: "",
+            });
+
+            // Delay redirect to allow toast to be visible
+            setTimeout(() => {
+                navigate("/");
+            }, 2000); // 2 second delay
+        } catch (error) {
+            console.error("Error during signup:", error);
+
+            if (error.response) {
+                // Server responded with error status
+                const result = error.response.data;
+                if (result.errors && Array.isArray(result.errors)) {
+                    toast.error(
+                        `Registration failed: ${result.errors.join(", ")}`
+                    );
+                } else {
+                    toast.error(
+                        `Registration failed: ${
+                            result.message || "Unknown error"
+                        }`
+                    );
+                }
+            } else if (error.request) {
+                // Network error
+                toast.error(
+                    "Network error. Please check your connection and try again."
+                );
+            } else {
+                // Other error
+                toast.error("An unexpected error occurred. Please try again.");
+            }
+        }
     };
 
     return (
@@ -290,6 +352,18 @@ export default function Signup() {
                     </div>
                 </form>
             </div>
+            <ToastContainer
+                position="top-right"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+            />
         </div>
     );
 }
