@@ -130,21 +130,21 @@ export const updateItem = async (req, res) => {
     const item = await Item.findById(req.params.itemId);
     if (!item) return res.status(404).json({ message: "Item not found" });
 
-    // Optional: Check if current user is owner or admin
-    if (
-      item.createdBy &&
-      item.createdBy.toString() !== req.user._id.toString()
-    ) {
+    // Ownership check (fix)
+    if (item.createdBy && item.createdBy.toString() !== req.user.userId) {
       return res
         .status(403)
         .json({ message: "Unauthorized to update this item" });
     }
 
-    Object.assign(item, req.body); // Apply updates
+    // Apply changes
+    Object.assign(item, req.body);
     await item.save();
-    res.json(item);
+
+    res.json({ success: true, data: item });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error("Update Error:", err.message);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
