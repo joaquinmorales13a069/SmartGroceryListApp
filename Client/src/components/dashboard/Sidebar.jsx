@@ -3,7 +3,7 @@ import React from "react";
 function Sidebar({ activeScreen, setActiveScreen }) {
     const menuItems = [
         "Dashboard",
-        "AI Meal Planner",
+        "Create Grocery List",
         "Grocery List",
         "Spending & Consumption Overview",
         "Calendar / Meal Schedule",
