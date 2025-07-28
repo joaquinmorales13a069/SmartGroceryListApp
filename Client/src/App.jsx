@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import UserDashboard from "./pages/userDashboard";
 
 function App() {
     const navigate = useNavigate();
@@ -13,7 +14,9 @@ function App() {
         }
     }, [navigate]);
 
-    return <div className="">App</div>;
+    return <>
+        <UserDashboard />
+    </>
 }
 
 export default App;
