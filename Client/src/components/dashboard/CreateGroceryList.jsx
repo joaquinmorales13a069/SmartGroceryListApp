@@ -11,6 +11,7 @@ const CreateGroceryList = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [totalItems, setTotalItems] = useState(0);
 
     // Fetch items from the backend
     const fetchItems = async (page = 1, search = "") => {
@@ -40,8 +41,11 @@ const CreateGroceryList = () => {
 
             if (response.data.success) {
                 setAvailableItems(response.data.data);
-                setTotalPages(response.data.pagination.totalPages);
-                setCurrentPage(response.data.pagination.currentPage);
+                setTotalPages(response.data.pagination?.totalPages || 1);
+                setCurrentPage(response.data.pagination?.currentPage || 1);
+                setTotalItems(response.data.pagination?.totalItems || 0);
+                setError(null); // Clear any previous errors
+                console.log("Pagination data:", response.data.pagination);
             } else {
                 setError("Failed to fetch items");
             }
@@ -60,11 +64,26 @@ const CreateGroceryList = () => {
     // Handle search
     const handleSearch = (e) => {
         e.preventDefault();
-        fetchItems(1, searchTerm);
+        setCurrentPage(1); // Reset to first page when searching
+        setLoading(true); // Show loading state during search
+        fetchItems(1, searchTerm.trim()); // Trim whitespace from search term
+    };
+
+    // Handle clear search
+    const handleClearSearch = () => {
+        setSearchTerm("");
+        setCurrentPage(1);
+        setLoading(true);
+        fetchItems(1, "");
     };
 
     // Handle pagination
     const handlePageChange = (page) => {
+        if (page < 1 || page > totalPages) {
+            return; // Prevent invalid page navigation
+        }
+        setCurrentPage(page);
+        setLoading(true); // Show loading state during pagination
         fetchItems(page, searchTerm);
     };
 
@@ -171,6 +190,15 @@ const CreateGroceryList = () => {
                         >
                             Search
                         </button>
+                        {searchTerm && (
+                            <button
+                                type="button"
+                                onClick={handleClearSearch}
+                                className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors duration-200"
+                            >
+                                Clear
+                            </button>
+                        )}
                     </form>
                 </div>
 
@@ -198,29 +226,112 @@ const CreateGroceryList = () => {
                         )}
 
                         {/* Pagination */}
-                        {totalPages > 1 && (
-                            <div className="flex justify-center items-center gap-2 mt-6">
-                                <button
-                                    onClick={() =>
-                                        handlePageChange(currentPage - 1)
-                                    }
-                                    disabled={currentPage === 1}
-                                    className="px-3 py-1 bg-gray-200 text-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-300"
-                                >
-                                    Previous
-                                </button>
-                                <span className="px-3 py-1 bg-[#76C893] text-white rounded">
-                                    {currentPage} of {totalPages}
-                                </span>
-                                <button
-                                    onClick={() =>
-                                        handlePageChange(currentPage + 1)
-                                    }
-                                    disabled={currentPage === totalPages}
-                                    className="px-3 py-1 bg-gray-200 text-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-300"
-                                >
-                                    Next
-                                </button>
+                        {availableItems.length > 0 && (
+                            <div className="flex flex-col items-center gap-2 mt-6">
+                                {totalPages > 1 ? (
+                                    <div className="flex justify-center items-center gap-3">
+                                        {/* Previous Page Arrow */}
+                                        <button
+                                            onClick={() =>
+                                                handlePageChange(
+                                                    currentPage - 1
+                                                )
+                                            }
+                                            disabled={currentPage === 1}
+                                            className="p-3 bg-gray-200 text-gray-700 rounded-full disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-300 transition-colors duration-200 flex items-center justify-center"
+                                            title="Previous page"
+                                        >
+                                            <svg
+                                                className="w-5 h-5"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M15 19l-7-7 7-7"
+                                                />
+                                            </svg>
+                                        </button>
+
+                                        {/* Page Info */}
+                                        <div className="flex items-center gap-2">
+                                            <span className="px-4 py-2 bg-[#76C893] text-white rounded-lg font-medium">
+                                                Page {currentPage} of{" "}
+                                                {totalPages}
+                                            </span>
+                                        </div>
+
+                                        {/* Page Numbers (show up to 5 pages) */}
+                                        {totalPages <= 5 && (
+                                            <div className="flex items-center gap-1">
+                                                {Array.from(
+                                                    { length: totalPages },
+                                                    (_, i) => i + 1
+                                                ).map((pageNum) => (
+                                                    <button
+                                                        key={pageNum}
+                                                        onClick={() =>
+                                                            handlePageChange(
+                                                                pageNum
+                                                            )
+                                                        }
+                                                        className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                                                            pageNum ===
+                                                            currentPage
+                                                                ? "bg-[#76C893] text-white"
+                                                                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                                        }`}
+                                                    >
+                                                        {pageNum}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        {/* Next Page Arrow */}
+                                        <button
+                                            onClick={() =>
+                                                handlePageChange(
+                                                    currentPage + 1
+                                                )
+                                            }
+                                            disabled={
+                                                currentPage === totalPages
+                                            }
+                                            className="p-3 bg-gray-200 text-gray-700 rounded-full disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-300 transition-colors duration-200 flex items-center justify-center"
+                                            title="Next page"
+                                        >
+                                            <svg
+                                                className="w-5 h-5"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M9 5l7 7-7 7"
+                                                />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="text-sm text-gray-500">
+                                        All items displayed
+                                    </div>
+                                )}
+                                <p className="text-sm text-gray-600">
+                                    Showing {availableItems.length} of{" "}
+                                    {totalItems || "?"} items
+                                    {totalPages > 1 &&
+                                        ` (Page ${currentPage} of ${totalPages})`}
+                                </p>
                             </div>
                         )}
                     </div>

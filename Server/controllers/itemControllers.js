@@ -4,9 +4,9 @@ import Item from "../models/itemModel.js";
 export const getItems = async (req, res) => {
     try {
         // Extract query parameters for pagination and search
-        const page = parseInt(req.query.page) || 1;
-        const limit = 20;
-        const search = req.query.search || "";
+        const page = Math.max(1, parseInt(req.query.page) || 1); // Ensure page is at least 1
+        const limit = 10; // Show only 10 items per page
+        const search = (req.query.search || "").trim(); // Trim whitespace
         const skip = (page - 1) * limit;
 
         // search query
@@ -15,8 +15,8 @@ export const getItems = async (req, res) => {
         };
 
         if (search) {
-            // case-insensitive search
-            query.$text = { $search: search }; // Full-text search support
+            // case-insensitive search using regex for better compatibility
+            query.name = { $regex: search, $options: "i" };
         }
         // execute the query with pagination
         const items = await Item.find(query)
@@ -27,6 +27,14 @@ export const getItems = async (req, res) => {
         // Get total count for pagination info
         const totalItems = await Item.countDocuments(query);
         const totalPages = Math.ceil(totalItems / limit);
+
+        // Handle case where requested page exceeds total pages
+        if (page > totalPages && totalPages > 0) {
+            return res.status(400).json({
+                success: false,
+                message: `Page ${page} does not exist. Total pages: ${totalPages}`,
+            });
+        }
 
         // pages logic
         const hasNext = page < totalPages; // Are there more pages?

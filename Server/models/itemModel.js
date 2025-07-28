@@ -53,8 +53,8 @@ const itemSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Create index for efficient searching by name
-itemSchema.index({ name: "text" });
+// Create index for efficient searching by name (case-insensitive)
+itemSchema.index({ name: 1 });
 
 const Item = mongoose.model("Item", itemSchema);
 export default Item;
