@@ -1,0 +1,165 @@
+import React from "react";
+import { toast } from "react-toastify";
+import GroceryListItemCard from '../GroceryListItemCard';
+import MealPlanCard from '../MealPlanCard';
+
+function GroceryList({ list, onBack, onDelete }) {
+    // Format date
+    const formatDate = (dateString) => {
+        return new Date(dateString).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+        });
+    };
+
+    // Format expiry date
+    const formatExpiryDate = (dateString) => {
+        if (!dateString) return "Not specified";
+        return new Date(dateString).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+        });
+    };
+
+    // Get status badge styling
+    const getStatusBadge = (status) => {
+        const baseClasses = "px-3 py-1 rounded-full text-sm font-medium";
+        if (status === "active") {
+            return `${baseClasses} bg-[#76C893] text-white`;
+        } else {
+            return `${baseClasses} bg-[#FFB74D] text-white`;
+        }
+    };
+
+    // Calculate total price
+    const calculateTotalPrice = () => {
+        return list.items.reduce((total, item) => {
+            const price = item.item?.price || 0;
+            return total + price * item.quantity;
+        }, 0);
+    };
+
+    // Handle delete
+    const handleDelete = () => {
+        if (window.confirm(`Are you sure you want to delete "${list.name}"?`)) {
+            onDelete();
+        }
+    };
+
+    return (
+        <div className="p-6 bg-[#F9F5EF] min-h-screen">
+            <div className="max-w-4xl mx-auto">
+                {/* Header */}
+                <div className="bg-white rounded-lg shadow-md mb-6">
+                    <div className="px-6 py-4 border-b border-gray-200">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-4">
+                                <button
+                                    onClick={onBack}
+                                    className="text-[#76C893] hover:text-[#FFB74D] transition-colors"
+                                >
+                                    ← Back to Lists
+                                </button>
+                                <div>
+                                    <h2 className="text-2xl font-bold text-[#333333]">
+                                        {list.name}
+                                    </h2>
+                                    <p className="text-gray-600">
+                                        Created on {formatDate(list.createdAt)}
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex items-center space-x-3">
+                                <span className={getStatusBadge(list.status)}>
+                                    {list.status}
+                                </span>
+                                <button
+                                    onClick={handleDelete}
+                                    className="px-4 py-2 bg-[#FF6F61] text-white rounded-lg hover:bg-red-700 transition-colors"
+                                >
+                                    Delete List
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Summary Stats */}
+                    <div className="px-6 py-4 bg-gray-50">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="text-center">
+                                <p className="text-sm text-gray-600">
+                                    Total Items
+                                </p>
+                                <p className="text-2xl font-bold text-[#333333]">
+                                    {list.totalItems || 0}
+                                </p>
+                            </div>
+                            <div className="text-center">
+                                <p className="text-sm text-gray-600">
+                                    Total Price
+                                </p>
+                                <p className="text-2xl font-bold text-[#333333]">
+                                    ${calculateTotalPrice().toFixed(2)}
+                                </p>
+                            </div>
+                            <div className="text-center">
+                                <p className="text-sm text-gray-600">
+                                    Last Updated
+                                </p>
+                                <p className="text-lg font-semibold text-[#333333]">
+                                    {formatDate(list.updatedAt)}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Items Section */}
+                <div className="bg-white rounded-lg shadow-md mb-6">
+                    <div className="px-6 py-4 border-b border-gray-200">
+                        <h3 className="text-xl font-semibold text-[#333333]">
+                            Items
+                        </h3>
+                    </div>
+                    <div className="p-6">
+                        {list.items.length === 0 ? (
+                            <div className="text-center text-gray-500 py-8">
+                                No items in this list
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {list.items.map((item, index) => (
+                                    <GroceryListItemCard key={index} item={item} index={index} />
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Meal Plans Section */}
+                {list.mealPlans && list.mealPlans.length > 0 && (
+                    <div className="bg-white rounded-lg shadow-md">
+                        <div className="px-6 py-4 border-b border-gray-200">
+                            <h3 className="text-xl font-semibold text-[#333333]">
+                                Meal Plans
+                            </h3>
+                        </div>
+                        <div className="p-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {list.mealPlans.map((meal, index) => (
+                                    <MealPlanCard key={index} meal={meal} index={index} />
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
+
+export default GroceryList;
