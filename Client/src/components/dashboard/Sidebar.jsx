@@ -6,6 +6,7 @@ import {
     MdList,
     MdSettings,
     MdLogout,
+    MdRestaurant,
 } from "react-icons/md";
 import { toast } from "react-toastify";
 
@@ -48,6 +49,20 @@ function Sidebar() {
 
     return (
         <div className="sidebar h-screen overflow-y-auto flex flex-col">
+            {/* Logo Section */}
+            <div className="hidden sm:block p-4 border-b border-gray-300">
+                <div className="flex items-center gap-2">
+                    <MdRestaurant className="text-2xl text-emerald-600" />
+                    <h1 className="text-xl font-bold text-gray-800">
+                        <span className="text-emerald-600">dAI</span>
+                        <span className="text-gray-700">licious</span>
+                    </h1>
+                </div>
+                <p className="text-xs text-gray-500 mt-1 ml-1">
+                    Smart Grocery Planning
+                </p>
+            </div>
+
             <div className="flex-1">
                 {menuItems.map((item) => {
                     const IconComponent = item.icon;
