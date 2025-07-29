@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { toast } from "react-toastify";
 import ItemCard from "../ItemCard";
 import CartItemCard from "../CartItemCard";
 
@@ -7,6 +8,7 @@ const CreateGroceryList = () => {
     const [availableItems, setAvailableItems] = useState([]);
     const [cartItems, setCartItems] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [creatingList, setCreatingList] = useState(false);
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
@@ -127,25 +129,62 @@ const CreateGroceryList = () => {
         }, 0);
     };
 
-    // Handle form submission (prepare data structure for now)
-    const handleCreateList = () => {
+    // Handle form submission (create grocery list)
+    const handleCreateList = async () => {
         if (cartItems.length === 0) {
-            alert("Please add items to your grocery list");
+            toast.error("Please add items to your grocery list");
             return;
         }
 
-        const groceryListData = {
-            name: `Grocery List - ${new Date().toLocaleDateString()}`,
-            items: cartItems.map((item) => ({
-                item: item._id,
-                quantity: item.quantity,
-                expiryDate: item.expiryDate,
-            })),
-            status: "active",
-        };
+        setCreatingList(true);
 
-        console.log("Grocery List Data:", groceryListData);
-        alert("Grocery list data prepared! Check console for details.");
+        try {
+            const token = localStorage.getItem("authToken");
+
+            if (!token) {
+                toast.error("Authentication required. Please log in.");
+                setCreatingList(false);
+                return;
+            }
+
+            const groceryListData = {
+                name: `Grocery List - ${new Date().toLocaleDateString()}`,
+                items: cartItems.map((item) => ({
+                    item: item._id,
+                    quantity: item.quantity,
+                    expiryDate: item.expiryDate,
+                })),
+                mealPlans: [], // Empty array since mealPlans are optional
+            };
+
+            const response = await axios.post(
+                "http://localhost:5000/api/grocery-lists",
+                groceryListData,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            if (response.data.success) {
+                toast.success("Grocery list created successfully!");
+                // Clear the cart after successful creation
+                setCartItems([]);
+                console.log("Created grocery list:", response.data.data);
+            } else {
+                toast.error("Failed to create grocery list");
+            }
+        } catch (error) {
+            console.error("Error creating grocery list:", error);
+            const errorMessage =
+                error.response?.data?.message ||
+                "Failed to create grocery list";
+            toast.error(errorMessage);
+        } finally {
+            setCreatingList(false);
+        }
     };
 
     if (loading) {
@@ -371,9 +410,12 @@ const CreateGroceryList = () => {
                             <div className="mt-6 pt-4 border-t border-gray-200">
                                 <button
                                     onClick={handleCreateList}
-                                    className="w-full py-3 bg-[#76C893] text-white rounded-lg font-semibold hover:bg-[#FFB74D] transition-colors duration-200"
+                                    disabled={creatingList}
+                                    className="w-full py-3 bg-[#76C893] text-white rounded-lg font-semibold hover:bg-[#FFB74D] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    Create Grocery List
+                                    {creatingList
+                                        ? "Creating..."
+                                        : "Create Grocery List"}
                                 </button>
                             </div>
                         )}
