@@ -4,13 +4,7 @@ function Sidebar({ activeScreen, setActiveScreen }) {
     const menuItems = [
         "Dashboard",
         "Create Grocery List",
-        "Grocery List",
-        "Spending & Consumption Overview",
-        "Calendar / Meal Schedule",
-        "Purchase History",
-        "Recipe Discovery",
-        "Deals & Promotions",
-        "Family/Household Management",
+        "All Grocery Lists",
         "Profile & Settings",
     ];
 
