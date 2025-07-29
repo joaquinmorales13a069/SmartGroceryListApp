@@ -46,7 +46,7 @@ body {
 
 /* Layout */
 .container {
-    @apply flex flex-grow;
+    @apply flex flex-grow w-full min-w-full;
 }
 
 /* Sidebar */
@@ -81,7 +81,25 @@ body {
 
 /* Main Content */
 .main-content {
-    @apply flex-grow p-4 bg-[#f8f5ed] overflow-y-auto h-screen;
+    @apply flex-grow p-4 bg-[#f8f5ed] overflow-y-auto h-screen w-full;
+}
+
+@media (max-width: 640px) {
+    .main-content {
+        @apply p-2;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        @apply p-3;
+    }
+}
+
+@media (min-width: 1024px) {
+    .main-content {
+        @apply p-6;
+    }
 }
 
 .main-content-col {
