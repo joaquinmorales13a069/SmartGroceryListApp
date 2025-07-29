@@ -7,7 +7,7 @@ function MainContent({ activeScreen }) {
     return (
         <div className="main-content">
             {activeScreen === "Dashboard" && <Dashboard />}
-            {activeScreen === "Create Grocery List" && <CreateGroceryList />}
+            {activeScreen === "Add Grocery List" && <CreateGroceryList />}
             {activeScreen === "All Grocery Lists" && <UserGroceryLists />}
         </div>
     );
