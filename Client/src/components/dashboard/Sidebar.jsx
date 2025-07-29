@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
     MdDashboard,
     MdAdd,
@@ -9,14 +9,15 @@ import {
 } from "react-icons/md";
 import { toast } from "react-toastify";
 
-function Sidebar({ activeScreen, setActiveScreen }) {
+function Sidebar() {
     const navigate = useNavigate();
+    const location = useLocation();
 
     const menuItems = [
-        { name: "Dashboard", icon: MdDashboard },
-        { name: "Add Grocery List", icon: MdAdd },
-        { name: "All Grocery Lists", icon: MdList },
-        { name: "Profile & Settings", icon: MdSettings },
+        { name: "Dashboard", icon: MdDashboard, path: "/dashboard" },
+        { name: "Add Grocery List", icon: MdAdd, path: "/create-new-list" },
+        { name: "All Grocery Lists", icon: MdList, path: "/all-grocery-lists" },
+        { name: "Profile & Settings", icon: MdSettings, path: "/settings" },
     ];
 
     const handleLogout = () => {
@@ -38,29 +39,35 @@ function Sidebar({ activeScreen, setActiveScreen }) {
         }
     };
 
+    const isActiveRoute = (path) => {
+        if (path === "/dashboard") {
+            return location.pathname === "/dashboard";
+        }
+        return location.pathname.startsWith(path);
+    };
+
     return (
         <div className="sidebar h-screen overflow-y-auto flex flex-col">
             <div className="flex-1">
                 {menuItems.map((item) => {
                     const IconComponent = item.icon;
                     return (
-                        <a
+                        <button
                             key={item.name}
-                            href="#"
                             className={
-                                activeScreen === item.name
+                                isActiveRoute(item.path)
                                     ? "menu-item active"
                                     : "menu-item"
                             }
-                            onClick={() => setActiveScreen(item.name)}
+                            onClick={() => navigate(item.path)}
                         >
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-3 w-full">
                                 <IconComponent className="text-lg flex-shrink-0" />
-                                <span className="hidden sm:block">
+                                <span className="hidden sm:block text-left">
                                     {item.name}
                                 </span>
                             </div>
-                        </a>
+                        </button>
                     );
                 })}
             </div>
@@ -69,11 +76,13 @@ function Sidebar({ activeScreen, setActiveScreen }) {
             <div className="mt-auto border-t border-gray-300 pt-4">
                 <button
                     onClick={handleLogout}
-                    className="menu-item w-full text-left hover:bg-red-100 hover:text-red-600 transition-colors duration-200"
+                    className="menu-item hover:bg-red-100 hover:text-red-600 transition-colors duration-200"
                 >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 w-full">
                         <MdLogout className="text-lg flex-shrink-0" />
-                        <span className="hidden sm:block">Logout</span>
+                        <span className="hidden sm:block text-left">
+                            Logout
+                        </span>
                     </div>
                 </button>
             </div>

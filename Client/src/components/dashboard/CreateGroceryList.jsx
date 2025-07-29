@@ -3,6 +3,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import ItemCard from "../ItemCard";
 import CartItemCard from "../CartItemCard";
+import Sidebar from "./Sidebar";
 
 const CreateGroceryList = () => {
     const [availableItems, setAvailableItems] = useState([]);
@@ -189,236 +190,260 @@ const CreateGroceryList = () => {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <div className="text-[#76C893] text-lg">Loading items...</div>
+            <div className="container">
+                <Sidebar />
+                <div className="main-content">
+                    <div className="flex items-center justify-center h-64">
+                        <div className="text-[#76C893] text-lg">
+                            Loading items...
+                        </div>
+                    </div>
+                </div>
             </div>
         );
     }
 
     if (error) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <div className="text-[#FF6F61] text-lg">Error: {error}</div>
+            <div className="container">
+                <Sidebar />
+                <div className="main-content">
+                    <div className="flex items-center justify-center h-64">
+                        <div className="text-[#FF6F61] text-lg">
+                            Error: {error}
+                        </div>
+                    </div>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen w-full bg-[#F9F5EF] relative -m-4">
-            <div className="p-6">
-                <h1 className="text-3xl font-bold mb-6 text-center text-[#333333]">
-                    Create New Grocery List
-                </h1>
+        <div className="container">
+            <Sidebar />
+            <div className="main-content">
+                <div className="min-h-screen w-full bg-[#F9F5EF] relative -m-4">
+                    <div className="p-6">
+                        <h1 className="text-3xl font-bold mb-6 text-center text-[#333333]">
+                            Create New Grocery List
+                        </h1>
 
-                {/* Search Bar */}
-                <div className="mb-6">
-                    <form
-                        onSubmit={handleSearch}
-                        className="flex gap-2 max-w-md mx-auto"
-                    >
-                        <input
-                            type="text"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            placeholder="Search items..."
-                            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#76C893] focus:border-transparent"
-                        />
-                        <button
-                            type="submit"
-                            className="px-6 py-2 bg-[#76C893] text-white rounded-lg hover:bg-[#FFB74D] transition-colors duration-200"
-                        >
-                            Search
-                        </button>
-                        {searchTerm && (
-                            <button
-                                type="button"
-                                onClick={handleClearSearch}
-                                className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors duration-200"
+                        {/* Search Bar */}
+                        <div className="mb-6">
+                            <form
+                                onSubmit={handleSearch}
+                                className="flex gap-2 max-w-md mx-auto"
                             >
-                                Clear
-                            </button>
-                        )}
-                    </form>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[70%]">
-                    {/* Available Items */}
-                    <div className="bg-white p-6 rounded-2xl shadow-lg overflow-auto">
-                        <h2 className="text-xl font-semibold mb-4 text-[#333333]">
-                            Available Items
-                        </h2>
-
-                        {availableItems.length === 0 ? (
-                            <p className="text-gray-500 text-center py-8">
-                                No items found.
-                            </p>
-                        ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {availableItems.map((item) => (
-                                    <ItemCard
-                                        key={item._id}
-                                        item={item}
-                                        onAddToCart={addToCart}
-                                    />
-                                ))}
-                            </div>
-                        )}
-
-                        {/* Pagination */}
-                        {availableItems.length > 0 && (
-                            <div className="flex flex-col items-center gap-2 mt-6">
-                                {totalPages > 1 ? (
-                                    <div className="flex justify-center items-center gap-3">
-                                        {/* Previous Page Arrow */}
-                                        <button
-                                            onClick={() =>
-                                                handlePageChange(
-                                                    currentPage - 1
-                                                )
-                                            }
-                                            disabled={currentPage === 1}
-                                            className="p-3 bg-gray-200 text-gray-700 rounded-full disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-300 transition-colors duration-200 flex items-center justify-center"
-                                            title="Previous page"
-                                        >
-                                            <svg
-                                                className="w-5 h-5"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M15 19l-7-7 7-7"
-                                                />
-                                            </svg>
-                                        </button>
-
-                                        {/* Page Info */}
-                                        <div className="flex items-center gap-2">
-                                            <span className="px-4 py-2 bg-[#76C893] text-white rounded-lg font-medium">
-                                                Page {currentPage} of{" "}
-                                                {totalPages}
-                                            </span>
-                                        </div>
-
-                                        {/* Page Numbers (show up to 5 pages) */}
-                                        {totalPages <= 5 && (
-                                            <div className="flex items-center gap-1">
-                                                {Array.from(
-                                                    { length: totalPages },
-                                                    (_, i) => i + 1
-                                                ).map((pageNum) => (
-                                                    <button
-                                                        key={pageNum}
-                                                        onClick={() =>
-                                                            handlePageChange(
-                                                                pageNum
-                                                            )
-                                                        }
-                                                        className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors duration-200 ${
-                                                            pageNum ===
-                                                            currentPage
-                                                                ? "bg-[#76C893] text-white"
-                                                                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                                                        }`}
-                                                    >
-                                                        {pageNum}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        )}
-
-                                        {/* Next Page Arrow */}
-                                        <button
-                                            onClick={() =>
-                                                handlePageChange(
-                                                    currentPage + 1
-                                                )
-                                            }
-                                            disabled={
-                                                currentPage === totalPages
-                                            }
-                                            className="p-3 bg-gray-200 text-gray-700 rounded-full disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-300 transition-colors duration-200 flex items-center justify-center"
-                                            title="Next page"
-                                        >
-                                            <svg
-                                                className="w-5 h-5"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M9 5l7 7-7 7"
-                                                />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <div className="text-sm text-gray-500">
-                                        All items displayed
-                                    </div>
+                                <input
+                                    type="text"
+                                    value={searchTerm}
+                                    onChange={(e) =>
+                                        setSearchTerm(e.target.value)
+                                    }
+                                    placeholder="Search items..."
+                                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#76C893] focus:border-transparent"
+                                />
+                                <button
+                                    type="submit"
+                                    className="px-6 py-2 bg-[#76C893] text-white rounded-lg hover:bg-[#FFB74D] transition-colors duration-200"
+                                >
+                                    Search
+                                </button>
+                                {searchTerm && (
+                                    <button
+                                        type="button"
+                                        onClick={handleClearSearch}
+                                        className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors duration-200"
+                                    >
+                                        Clear
+                                    </button>
                                 )}
-                                <p className="text-sm text-gray-600">
-                                    Showing {availableItems.length} of{" "}
-                                    {totalItems || "?"} items
-                                    {totalPages > 1 &&
-                                        ` (Page ${currentPage} of ${totalPages})`}
-                                </p>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Shopping Cart */}
-                    <div className="bg-white p-6 rounded-2xl shadow-lg overflow-auto">
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-xl font-semibold text-[#333333]">
-                                My Grocery List
-                            </h2>
-                            <div className="text-lg font-semibold text-[#76C893]">
-                                Total: ${calculateTotal().toFixed(2)}
-                            </div>
+                            </form>
                         </div>
 
-                        {cartItems.length === 0 ? (
-                            <p className="text-gray-500 text-center py-8">
-                                No items in your list.
-                            </p>
-                        ) : (
-                            <div className="space-y-3">
-                                {cartItems.map((item) => (
-                                    <CartItemCard
-                                        key={item._id}
-                                        item={item}
-                                        onUpdateQuantity={
-                                            updateCartItemQuantity
-                                        }
-                                        onRemoveItem={removeFromCart}
-                                    />
-                                ))}
-                            </div>
-                        )}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[70%]">
+                            {/* Available Items */}
+                            <div className="bg-white p-6 rounded-2xl shadow-lg overflow-auto">
+                                <h2 className="text-xl font-semibold mb-4 text-[#333333]">
+                                    Available Items
+                                </h2>
 
-                        {/* Create List Button */}
-                        {cartItems.length > 0 && (
-                            <div className="mt-6 pt-4 border-t border-gray-200">
-                                <button
-                                    onClick={handleCreateList}
-                                    disabled={creatingList}
-                                    className="w-full py-3 bg-[#76C893] text-white rounded-lg font-semibold hover:bg-[#FFB74D] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {creatingList
-                                        ? "Creating..."
-                                        : "Create Grocery List"}
-                                </button>
+                                {availableItems.length === 0 ? (
+                                    <p className="text-gray-500 text-center py-8">
+                                        No items found.
+                                    </p>
+                                ) : (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {availableItems.map((item) => (
+                                            <ItemCard
+                                                key={item._id}
+                                                item={item}
+                                                onAddToCart={addToCart}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Pagination */}
+                                {availableItems.length > 0 && (
+                                    <div className="flex flex-col items-center gap-2 mt-6">
+                                        {totalPages > 1 ? (
+                                            <div className="flex justify-center items-center gap-3">
+                                                {/* Previous Page Arrow */}
+                                                <button
+                                                    onClick={() =>
+                                                        handlePageChange(
+                                                            currentPage - 1
+                                                        )
+                                                    }
+                                                    disabled={currentPage === 1}
+                                                    className="p-3 bg-gray-200 text-gray-700 rounded-full disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-300 transition-colors duration-200 flex items-center justify-center"
+                                                    title="Previous page"
+                                                >
+                                                    <svg
+                                                        className="w-5 h-5"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth={2}
+                                                            d="M15 19l-7-7 7-7"
+                                                        />
+                                                    </svg>
+                                                </button>
+
+                                                {/* Page Info */}
+                                                <div className="flex items-center gap-2">
+                                                    <span className="px-4 py-2 bg-[#76C893] text-white rounded-lg font-medium">
+                                                        Page {currentPage} of{" "}
+                                                        {totalPages}
+                                                    </span>
+                                                </div>
+
+                                                {/* Page Numbers (show up to 5 pages) */}
+                                                {totalPages <= 5 && (
+                                                    <div className="flex items-center gap-1">
+                                                        {Array.from(
+                                                            {
+                                                                length: totalPages,
+                                                            },
+                                                            (_, i) => i + 1
+                                                        ).map((pageNum) => (
+                                                            <button
+                                                                key={pageNum}
+                                                                onClick={() =>
+                                                                    handlePageChange(
+                                                                        pageNum
+                                                                    )
+                                                                }
+                                                                className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                                                                    pageNum ===
+                                                                    currentPage
+                                                                        ? "bg-[#76C893] text-white"
+                                                                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                                                }`}
+                                                            >
+                                                                {pageNum}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                )}
+
+                                                {/* Next Page Arrow */}
+                                                <button
+                                                    onClick={() =>
+                                                        handlePageChange(
+                                                            currentPage + 1
+                                                        )
+                                                    }
+                                                    disabled={
+                                                        currentPage ===
+                                                        totalPages
+                                                    }
+                                                    className="p-3 bg-gray-200 text-gray-700 rounded-full disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-300 transition-colors duration-200 flex items-center justify-center"
+                                                    title="Next page"
+                                                >
+                                                    <svg
+                                                        className="w-5 h-5"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth={2}
+                                                            d="M9 5l7 7-7 7"
+                                                        />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <div className="text-sm text-gray-500">
+                                                All items displayed
+                                            </div>
+                                        )}
+                                        <p className="text-sm text-gray-600">
+                                            Showing {availableItems.length} of{" "}
+                                            {totalItems || "?"} items
+                                            {totalPages > 1 &&
+                                                ` (Page ${currentPage} of ${totalPages})`}
+                                        </p>
+                                    </div>
+                                )}
                             </div>
-                        )}
+
+                            {/* Shopping Cart */}
+                            <div className="bg-white p-6 rounded-2xl shadow-lg overflow-auto">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h2 className="text-xl font-semibold text-[#333333]">
+                                        My Grocery List
+                                    </h2>
+                                    <div className="text-lg font-semibold text-[#76C893]">
+                                        Total: ${calculateTotal().toFixed(2)}
+                                    </div>
+                                </div>
+
+                                {cartItems.length === 0 ? (
+                                    <p className="text-gray-500 text-center py-8">
+                                        No items in your list.
+                                    </p>
+                                ) : (
+                                    <div className="space-y-3">
+                                        {cartItems.map((item) => (
+                                            <CartItemCard
+                                                key={item._id}
+                                                item={item}
+                                                onUpdateQuantity={
+                                                    updateCartItemQuantity
+                                                }
+                                                onRemoveItem={removeFromCart}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Create List Button */}
+                                {cartItems.length > 0 && (
+                                    <div className="mt-6 pt-4 border-t border-gray-200">
+                                        <button
+                                            onClick={handleCreateList}
+                                            disabled={creatingList}
+                                            className="w-full py-3 bg-[#76C893] text-white rounded-lg font-semibold hover:bg-[#FFB74D] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {creatingList
+                                                ? "Creating..."
+                                                : "Create Grocery List"}
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

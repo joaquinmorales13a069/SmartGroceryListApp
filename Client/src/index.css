@@ -62,7 +62,7 @@ body {
 
 /* Menu Items */
 .menu-item {
-    @apply no-underline mb-4 transition-all duration-200 text-sm text-[#333] px-3.5 py-4 rounded-md flex items-center bg-transparent border-none cursor-pointer;
+    @apply no-underline mb-4 transition-all duration-200 text-sm text-[#333] px-3.5 py-4 rounded-md flex items-center bg-transparent border-none cursor-pointer w-full min-h-[48px] justify-start;
 }
 
 .menu-item:hover {
@@ -75,7 +75,7 @@ body {
 
 @media (max-width: 640px) {
     .menu-item {
-        @apply px-2 py-3 justify-center;
+        @apply px-2 py-3 justify-center min-h-[40px];
     }
 }
 

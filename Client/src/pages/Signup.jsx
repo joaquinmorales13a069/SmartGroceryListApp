@@ -20,8 +20,8 @@ export default function Signup() {
     useEffect(() => {
         const authToken = localStorage.getItem("authToken");
         if (authToken) {
-            // User is already authenticated, redirect to home
-            navigate("/");
+            // User is already authenticated, redirect to dashboard
+            navigate("/dashboard");
         }
     }, [navigate]);
 
@@ -139,7 +139,7 @@ export default function Signup() {
 
             // Delay redirect to allow toast to be visible
             setTimeout(() => {
-                navigate("/");
+                navigate("/dashboard");
             }, 2000); // 2 second delay
         } catch (error) {
             console.error("Error during signup:", error);

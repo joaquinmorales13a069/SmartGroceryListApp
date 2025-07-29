@@ -19,8 +19,8 @@ export default function Login() {
     useEffect(() => {
         const authToken = localStorage.getItem("authToken");
         if (authToken) {
-            // User is already authenticated, redirect to home
-            navigate("/");
+            // User is already authenticated, redirect to dashboard
+            navigate("/dashboard");
         }
     }, [navigate]);
 
@@ -127,7 +127,7 @@ export default function Login() {
 
                 // Delay redirect to allow toast to be visible
                 setTimeout(() => {
-                    navigate("/");
+                    navigate("/dashboard");
                 }, 1500);
             } catch (error) {
                 console.error("Error during login:", error);
