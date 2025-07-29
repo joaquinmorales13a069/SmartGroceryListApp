@@ -271,10 +271,10 @@ For detailed testing instructions, refer to the testing documentation in the pro
 
 ## Team Members
 
--   **Joaquin Morales** - Full Stack Development
--   **Gurpreet Kaur** - Backend Development
--   **Harry Suter** - Frontend Development
--   **Kennedy Kamau** - Database & API Development
+-   **Joaquin Morales** - Project Manager and Fullstack developer
+-   **Gurpreet Kaur** - Frontend Development
+-   **Harry Suter** - Backend Development
+-   **Kennedy Kamau** - Fullstack developer
 
 ## License
 
