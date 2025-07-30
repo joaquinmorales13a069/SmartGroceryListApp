@@ -52,7 +52,14 @@ export default function UserPreferencesForm({ user, setUser }) {
     return (
         <form className="grid grid-cols-1 gap-6" onSubmit={handleSubmit}>
             <div>
+                <label
+                    htmlFor="dietaryPreference"
+                    className="block text-sm font-medium text-[#333333] mb-1"
+                >
+                    Dietary Preference
+                </label>
                 <select
+                    id="dietaryPreference"
                     name="dietaryPreference"
                     className="w-full border border-[#76C893] rounded-lg px-4 py-2 text-[#333333] bg-transparent outline-none"
                     value={form.dietaryPreference}
@@ -67,7 +74,14 @@ export default function UserPreferencesForm({ user, setUser }) {
                 </select>
             </div>
             <div>
+                <label
+                    htmlFor="favouriteMeal"
+                    className="block text-sm font-medium text-[#333333] mb-1"
+                >
+                    Favorite Meal
+                </label>
                 <input
+                    id="favouriteMeal"
                     type="text"
                     name="favouriteMeal"
                     placeholder="Favorite Meal"
