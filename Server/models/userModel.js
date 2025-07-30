@@ -77,6 +77,16 @@ const userSchema = new mongoose.Schema(
             trim: true,
             maxlength: [100, "Favourite meal cannot exceed 100 characters"],
         },
+        userType: {
+            type: String,
+            enum: ["user", "admin"],
+            default: "user",
+            required: true,
+        },
+        deleted: {
+            type: Boolean,
+            default: false,
+        },
         orders: [
             {
                 type: mongoose.Schema.Types.Mixed,

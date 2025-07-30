@@ -18,7 +18,7 @@ function Sidebar() {
         { name: "Dashboard", icon: MdDashboard, path: "/dashboard" },
         { name: "Add Grocery List", icon: MdAdd, path: "/create-new-list" },
         { name: "All Grocery Lists", icon: MdList, path: "/all-grocery-lists" },
-        { name: "Profile & Settings", icon: MdSettings, path: "/settings" },
+        { name: "Profile & Settings", icon: MdSettings, path: "/settings" }, // Navigates to UserSettings (protected)
     ];
 
     const handleLogout = () => {

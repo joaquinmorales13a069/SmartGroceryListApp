@@ -11,6 +11,7 @@ import UserDashboard from "./pages/userDashboard.jsx";
 import CreateGroceryList from "./components/dashboard/CreateGroceryList.jsx";
 import UserGroceryLists from "./components/dashboard/UserGroceryLists.jsx";
 import GroceryList from "./components/dashboard/GroceryList.jsx";
+import UserSettings from "./components/dashboard/UserSettings.jsx";
 
 createRoot(document.getElementById("root")).render(
     <StrictMode>
@@ -32,6 +33,7 @@ createRoot(document.getElementById("root")).render(
                     path="/all-grocery-lists/:listId"
                     element={<GroceryList />}
                 />
+                <Route path="/settings" element={<UserSettings />} />
             </Routes>
             <ToastContainer
                 position="top-right"
