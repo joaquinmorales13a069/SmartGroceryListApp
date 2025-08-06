@@ -27,6 +27,6 @@ router.patch("/:id", authMiddleware, updateGroceryList);
 router.delete("/:id", authMiddleware, deleteGroceryList);
 
 // POST generate meal plans manually 
-router.post("/:id/generate-meal-plan", authMiddleware, generateMealPlans)
+router.post("/:id/generate-meals", authMiddleware, generateMealPlans);
 
 export default router;

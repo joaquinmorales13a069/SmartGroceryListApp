@@ -1,12 +1,10 @@
 import GroceryList from "../models/groceryListModel.js";
 import axios from "axios";
 
-// ✅ Generate AI meal plans using n8n workflow
 const generateMealPlansForList = async (listId, userId) => {
     try {
         console.log(`🤖 Starting AI meal generation for list: ${listId}`);
 
-        // Fetch the grocery list with populated items
         const list = await GroceryList.findById(listId).populate(
             "items.item",
             "name price nutrition"
@@ -16,26 +14,24 @@ const generateMealPlansForList = async (listId, userId) => {
             throw new Error("Grocery list not found");
         }
 
-        // Transform data for AI processing
         const ingredients = list.items.map((item) => ({
             name: item.item.name,
             quantity: item.quantity,
             nutrition: item.item.nutrition || {},
         }));
+
         console.log(
             `📋 Processing ${ingredients.length} ingredients:`,
             ingredients.map((i) => `${i.name} (${i.quantity})`)
         );
 
-        // Prepare clean payload for n8n
         const requestPayload = {
-            groceryList: listId,
+            groceryListId: listId,
             ingredients: ingredients,
             userId: userId,
             requestedAt: new Date().toISOString(),
         };
 
-        // Call n8n webhook with header authentication
         const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL;
 
         if (!n8nWebhookUrl) {
@@ -51,44 +47,83 @@ const generateMealPlansForList = async (listId, userId) => {
             headers: {
                 "Content-Type": "application/json",
                 "User-Agent": "GroceryApp-Server/1.0",
-                // n8n webhook authentication
                 "N8N_WEBHOOK_API_KEY": process.env.N8N_WEBHOOK_API_KEY,
             },
         });
 
         console.log(`✅ n8n response received:`, {
             status: response.status,
-            mealCount: response.data?.mealPlans?.length || 0,
+            dataType: Array.isArray(response.data) ? "array" : "object",
+            arrayLength: Array.isArray(response.data)
+                ? response.data.length
+                : "N/A",
         });
 
-        // Validate and save response from n8n workflow
-        if (response.data && response.data.success && response.data.mealPlans) {
-            list.mealPlans = response.data.mealPlans;
-            await list.save();
+        // Handle the array response from n8n - FIXED VERSION
+        let mealPlans;
 
+        if (Array.isArray(response.data)) {
+            // n8n returned an array, get the first element
+            const firstElement = response.data[0];
+            if (
+                firstElement &&
+                firstElement.success &&
+                firstElement.mealPlans
+            ) {
+                mealPlans = firstElement.mealPlans;
+                console.log(
+                    `📦 Successfully extracted ${mealPlans.length} meal plans from array response`
+                );
+            } else {
+                console.error(
+                    "❌ Invalid structure in array response:",
+                    firstElement
+                );
+                throw new Error("Invalid array response structure from n8n");
+            }
+        } else if (
+            response.data &&
+            response.data.success &&
+            response.data.mealPlans
+        ) {
+            // Direct object response
+            mealPlans = response.data.mealPlans;
             console.log(
-                `💾 Saved ${response.data.mealPlans.length} meal plans to database`
+                `📦 Successfully extracted ${mealPlans.length} meal plans from object response`
             );
-            return response.data.mealPlans;
         } else {
+            console.error("❌ Invalid response structure:", response.data);
             throw new Error("Invalid response format from n8n workflow");
         }
+
+        // Final validation
+        if (!Array.isArray(mealPlans) || mealPlans.length === 0) {
+            console.error("❌ No valid meal plans found:", mealPlans);
+            throw new Error("No meal plans received from n8n workflow");
+        }
+
+        // Save to database
+        list.mealPlans = mealPlans;
+        await list.save();
+
+        console.log(
+            `💾 Successfully saved ${mealPlans.length} meal plans to database`
+        );
+        console.log(
+            `🎯 Meal plan names:`,
+            mealPlans.map((meal) => meal.name)
+        );
+
+        return mealPlans;
     } catch (error) {
         console.error("❌ Error in generateMealPlansForList:", error.message);
 
-        // Enhanced error handling for different scenarios
-        if (error.response?.status === 401) {
-            console.error(
-                "🔐 Authentication failed - check N8N_WEBHOOK_API_KEY"
-            );
-        } else if (error.response?.status === 403) {
-            console.error("🚫 Forbidden - webhook authentication rejected");
-        } else if (error.code === "ECONNREFUSED") {
-            console.error(
-                "🔌 Connection refused - check if n8n is running and accessible"
-            );
-        } else if (error.code === "ENOTFOUND") {
-            console.error("🌐 DNS resolution failed - check the n8n URL");
+        // Log response data for debugging
+        if (error.response) {
+            console.error("🔍 HTTP Error Response:", {
+                status: error.response.status,
+                data: JSON.stringify(error.response.data, null, 2),
+            });
         }
 
         throw error;
@@ -134,30 +169,38 @@ export const createGroceryList = async (req, res) => {
     }
 
     try {
-        // ✅ Use correct field name from schema: user
         const groceryList = new GroceryList({
             name,
             items,
-            mealPlans: mealPlans || [], // Default to empty array (generated later by generateMealPlansForList())
-            user: req.user.userId, 
+            mealPlans: mealPlans || [],
+            user: req.user.userId,
         });
 
         const newGroceryList = await groceryList.save();
+        console.log(`📝 Created new grocery list: ${newGroceryList._id}`);
 
         // Trigger AI meal generation asynchronously
-
-        setImmediate(async ()=> {
+        setImmediate(async () => {
             try {
-                await generateMealPlansForList(newGroceryList._id, req.user.userId);
-                console.log(`🎉 Background meal generation completed for list: ${newGroceryList._id}`);
+                await generateMealPlansForList(
+                    newGroceryList._id,
+                    req.user.userId
+                );
+                console.log(
+                    `🎉 Background meal generation completed for list: ${newGroceryList._id}`
+                );
             } catch (error) {
-                console.error(`💥 Background meal generation failed for list: ${newGroceryList._id}`, error.message);
+                console.error(
+                    `💥 Background meal generation failed for list: ${newGroceryList._id}`,
+                    error.message
+                );
             }
-        })
+        });
 
         res.status(201).json({
             success: true,
-            message: "Grocery list created successfully. AI meal suggestions are being generated in the background.",
+            message:
+                "Grocery list created successfully. AI meal suggestions are being generated in the background.",
             data: newGroceryList,
         });
     } catch (error) {
@@ -174,12 +217,13 @@ export const generateMealPlans = async (req, res) => {
     try {
         const { id } = req.params;
 
+        console.log(`🔄 Manual meal generation requested for list: ${id}`);
+
         const list = await GroceryList.findOne({
             _id: id,
             user: req.user.userId,
-        }).populate("items.item", "name price nutrition")
+        }).populate("items.item", "name price nutrition");
 
-        // List validation
         if (!list) {
             return res.status(404).json({
                 success: false,
@@ -194,32 +238,33 @@ export const generateMealPlans = async (req, res) => {
             });
         }
 
-        // Generate meal plans
         const mealPlans = await generateMealPlansForList(id, req.user.userId);
 
-        res.status(201).json({
+        res.status(200).json({
             success: true,
             message: "Meal plans generated successfully",
-            data: mealPlans
-        })
-
+            data: mealPlans,
+        });
     } catch (error) {
         console.error("Error in manual meal generation:", error);
-        
+
         let errorMessage = "Server error while generating meal plans";
-        
-        if (error.response?.status === 401 || error.response?.status === 403) {
-            errorMessage = "AI service authentication failed. Please contact support.";
-        } else if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
-            errorMessage = "AI service is temporarily unavailable. Please try again later.";
+
+        if (error.response?.status === 404) {
+            errorMessage = "AI service endpoint not found.";
+        } else if (
+            error.code === "ECONNREFUSED" ||
+            error.code === "ENOTFOUND"
+        ) {
+            errorMessage = "AI service is temporarily unavailable.";
         }
-        
+
         res.status(500).json({
             success: false,
             message: errorMessage,
         });
     }
-}
+};
 
 // ✅ Delete Grocery List
 export const deleteGroceryList = async (req, res) => {
@@ -339,4 +384,3 @@ export const updateGroceryList = async (req, res) => {
         });
     }
 };
-
