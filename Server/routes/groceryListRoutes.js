@@ -2,6 +2,7 @@ import express from "express";
 import {
   createGroceryList,
   deleteGroceryList,
+  generateMealPlans,
   getAllGroceryLists,
   getGroceryListById,
   updateGroceryList,
@@ -24,5 +25,8 @@ router.patch("/:id", authMiddleware, updateGroceryList);
 
 // DELETE grocery list
 router.delete("/:id", authMiddleware, deleteGroceryList);
+
+// POST generate meal plans manually 
+router.post("/:id/generate-meal-plan", authMiddleware, generateMealPlans)
 
 export default router;
