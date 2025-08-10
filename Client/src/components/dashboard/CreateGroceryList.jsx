@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import ItemCard from "../ItemCard";
@@ -15,6 +16,7 @@ const CreateGroceryList = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalItems, setTotalItems] = useState(0);
+    const navigate = useNavigate();
 
     // Fetch items from the backend
     const fetchItems = async (page = 1, search = "") => {
@@ -137,25 +139,20 @@ const CreateGroceryList = () => {
             return;
         }
 
+        const listName = prompt("Enter a name for your grocery list:");
+        if (!listName) return;
+
         setCreatingList(true);
 
         try {
             const token = localStorage.getItem("authToken");
-
-            if (!token) {
-                toast.error("Authentication required. Please log in.");
-                setCreatingList(false);
-                return;
-            }
-
             const groceryListData = {
-                name: `Grocery List - ${new Date().toLocaleDateString()}`,
+                name: listName.trim(),
                 items: cartItems.map((item) => ({
                     item: item._id,
                     quantity: item.quantity,
-                    expiryDate: item.expiryDate,
+                    expiryDate: item.expiryDate || null,
                 })),
-                mealPlans: [], // Empty array since mealPlans are optional
             };
 
             const response = await axios.post(
@@ -171,18 +168,20 @@ const CreateGroceryList = () => {
 
             if (response.data.success) {
                 toast.success("Grocery list created successfully!");
-                // Clear the cart after successful creation
+
+                // Clear the cart
                 setCartItems([]);
-                console.log("Created grocery list:", response.data.data);
-            } else {
-                toast.error("Failed to create grocery list");
+
+                // FIXED: Use the correct route that matches your main.jsx
+                const newListId = response.data.data._id;
+                console.log("Navigating to grocery list:", newListId);
+                navigate(`/all-grocery-lists/${newListId}`);
             }
         } catch (error) {
             console.error("Error creating grocery list:", error);
-            const errorMessage =
-                error.response?.data?.message ||
-                "Failed to create grocery list";
-            toast.error(errorMessage);
+            toast.error(
+                error.response?.data?.message || "Failed to create grocery list"
+            );
         } finally {
             setCreatingList(false);
         }
