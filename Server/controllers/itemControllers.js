@@ -20,7 +20,8 @@ export const getItems = async (req, res) => {
         }
         // execute the query with pagination
         const items = await Item.find(query)
-            .sort({ createdAt: -1 })
+            // Deterministic ordering to prevent duplicates across pages
+            .sort({ createdAt: -1, _id: -1 })
             .skip(skip)
             .limit(limit);
 

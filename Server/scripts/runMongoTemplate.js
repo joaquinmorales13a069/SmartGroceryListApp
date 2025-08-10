@@ -5,7 +5,7 @@ import Item from "../models/itemModel.js";
 // Load environment variables
 dotenv.config();
 
-// Generate 200 diverse grocery products (same as seedDatabase.js)
+// Generate 120 diverse grocery products (same as seedDatabase.js)
 const generateProducts = () => {
     const products = [];
 
@@ -1498,8 +1498,8 @@ const generateProducts = () => {
         ...snacks,
     ];
 
-    // Generate 200 products with batch numbers and expiry dates
-    for (let i = 0; i < 200; i++) {
+    // Generate 120 products with batch numbers and expiry dates
+    for (let i = 0; i < 120; i++) {
         const item = allItems[i % allItems.length];
         const batchNumber = `${item.name.substring(0, 3).toUpperCase()}${String(
             i + 1
@@ -1553,7 +1553,7 @@ const runMongoTemplate = async () => {
         });
         console.log("Connected to MongoDB successfully");
 
-        // Generate 200 products using the same function as seedDatabase.js
+        // Generate 120 products using the same function as seedDatabase.js
         const items = generateProducts();
         console.log(`Generated ${items.length} products`);
 

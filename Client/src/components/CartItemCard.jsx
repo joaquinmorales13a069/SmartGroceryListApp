@@ -2,12 +2,14 @@ import React from "react";
 import QuantityControl from "./QuantityControl";
 
 const CartItemCard = ({ item, onUpdateQuantity, onRemoveItem }) => {
+    const formatName = (name) =>
+        name ? name.replace(/\b\w/g, (c) => c.toUpperCase()) : "";
     return (
         <div className="flex justify-between items-center p-3 border border-gray-200 hover:bg-gray-50 rounded-lg w-full bg-white shadow-sm transition-colors duration-200">
             <div className="flex flex-1 items-center">
                 <div className="w-32 mr-4">
                     <p className="font-semibold text-base truncate w-28 text-[#333333]">
-                        {item.name}
+                        {formatName(item.name)}
                     </p>
                     <p className="text-xs text-gray-600 truncate">
                         ${item.price?.toFixed(2) || "N/A"}
