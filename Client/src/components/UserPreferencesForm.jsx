@@ -15,7 +15,11 @@ const dietaryOptions = [
     "None",
 ];
 
-export default function UserPreferencesForm({ user, setUser }) {
+export default function UserPreferencesForm({
+    user,
+    setUser,
+    isAdminEdit = false,
+}) {
     const [form, setForm] = useState({
         dietaryPreference: user.dietaryPreference || "None",
         favouriteMeal: user.favouriteMeal || "",
@@ -31,17 +35,23 @@ export default function UserPreferencesForm({ user, setUser }) {
         e.preventDefault();
         setLoading(true);
         try {
-            const token = localStorage.getItem("authToken");
-            const payload = { ...form };
-            const res = await axios.patch(
-                "http://localhost:5000/api/users/me",
-                payload,
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                }
-            );
-            setUser(res.data.user);
-            toast.success("Preferences updated!");
+            if (isAdminEdit) {
+                // For admin editing, directly call the setUser function passed as prop
+                await setUser(form);
+            } else {
+                // For regular user editing, use the existing logic
+                const token = localStorage.getItem("authToken");
+                const payload = { ...form };
+                const res = await axios.patch(
+                    "http://localhost:5000/api/users/me",
+                    payload,
+                    {
+                        headers: { Authorization: `Bearer ${token}` },
+                    }
+                );
+                setUser(res.data.user);
+                toast.success("Preferences updated!");
+            }
         } catch (err) {
             toast.error(err.response?.data?.message || "Update failed");
         } finally {

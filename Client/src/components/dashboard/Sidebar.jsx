@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
     MdDashboard,
@@ -7,18 +7,51 @@ import {
     MdSettings,
     MdLogout,
     MdRestaurant,
+    MdInventory,
+    MdPeople,
 } from "react-icons/md";
 import { toast } from "react-toastify";
+import axios from "axios";
 
 function Sidebar() {
     const navigate = useNavigate();
     const location = useLocation();
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const checkAdminStatus = async () => {
+            try {
+                const token = localStorage.getItem("authToken");
+                if (token) {
+                    const response = await axios.get(
+                        "http://localhost:5000/api/users/me",
+                        {
+                            headers: { Authorization: `Bearer ${token}` },
+                        }
+                    );
+                    setIsAdmin(response.data.user.userType === "admin");
+                }
+            } catch (error) {
+                console.error("Error checking admin status:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        checkAdminStatus();
+    }, []);
 
     const menuItems = [
         { name: "Dashboard", icon: MdDashboard, path: "/dashboard" },
         { name: "Add Grocery List", icon: MdAdd, path: "/create-new-list" },
         { name: "All Grocery Lists", icon: MdList, path: "/all-grocery-lists" },
-        { name: "Profile & Settings", icon: MdSettings, path: "/settings" }, // Navigates to UserSettings (protected)
+        { name: "Profile & Settings", icon: MdSettings, path: "/settings" },
+    ];
+
+    // Admin-only menu items
+    const adminMenuItems = [
+        { name: "List All Items", icon: MdInventory, path: "/admin/items" },
+        { name: "List All Users", icon: MdPeople, path: "/admin/users" },
     ];
 
     const handleLogout = () => {
@@ -46,6 +79,16 @@ function Sidebar() {
         }
         return location.pathname.startsWith(path);
     };
+
+    if (loading) {
+        return (
+            <div className="sidebar h-screen overflow-y-auto flex flex-col">
+                <div className="flex items-center justify-center h-full">
+                    <div className="text-gray-500">Loading...</div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="sidebar h-screen overflow-y-auto flex flex-col">
@@ -85,6 +128,39 @@ function Sidebar() {
                         </button>
                     );
                 })}
+
+                {/* Admin-only menu items */}
+                {isAdmin && (
+                    <>
+                        <div className="border-t border-gray-300 my-2"></div>
+                        <div className="px-4 py-2">
+                            <span className="text-xs text-gray-500 font-semibold uppercase tracking-wide">
+                                Admin Panel
+                            </span>
+                        </div>
+                        {adminMenuItems.map((item) => {
+                            const IconComponent = item.icon;
+                            return (
+                                <button
+                                    key={item.name}
+                                    className={
+                                        isActiveRoute(item.path)
+                                            ? "menu-item active"
+                                            : "menu-item"
+                                    }
+                                    onClick={() => navigate(item.path)}
+                                >
+                                    <div className="flex items-center gap-3 w-full">
+                                        <IconComponent className="text-lg flex-shrink-0" />
+                                        <span className="hidden sm:block text-left">
+                                            {item.name}
+                                        </span>
+                                    </div>
+                                </button>
+                            );
+                        })}
+                    </>
+                )}
             </div>
 
             {/* Logout Button */}
