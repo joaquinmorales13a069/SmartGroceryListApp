@@ -185,7 +185,6 @@ export const login = async (req, res) => {
             { expiresIn: "7d" }
         );
 
-        console.log("Generated token:", token);
         // Remove password from response
         const userResponse = user.toJSON();
         delete userResponse.password;
