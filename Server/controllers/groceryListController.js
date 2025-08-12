@@ -35,9 +35,7 @@ const generateMealPlansForList = async (listId, userId) => {
         const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL;
 
         if (!n8nWebhookUrl) {
-            throw new Error(
-                "N8N_WEBHOOK_URL not configured in environment variables"
-            );
+            throw new Error("N8N_WEBHOOK_URL environment variable not set");
         }
 
         console.log(`🌐 Calling n8n webhook: ${n8nWebhookUrl}`);
@@ -47,7 +45,7 @@ const generateMealPlansForList = async (listId, userId) => {
             headers: {
                 "Content-Type": "application/json",
                 "User-Agent": "GroceryApp-Server/1.0",
-                "N8N_WEBHOOK_API_KEY": process.env.N8N_WEBHOOK_API_KEY,
+                N8N_WEBHOOK_API_KEY: process.env.N8N_WEBHOOK_API_KEY,
             },
         });
 
@@ -59,11 +57,10 @@ const generateMealPlansForList = async (listId, userId) => {
                 : "N/A",
         });
 
-        // Handle the array response from n8n - FIXED VERSION
+        // Handle the array response from n8n - IMPROVED ERROR HANDLING
         let mealPlans;
 
         if (Array.isArray(response.data)) {
-            // n8n returned an array, get the first element
             const firstElement = response.data[0];
             if (
                 firstElement &&
@@ -71,50 +68,67 @@ const generateMealPlansForList = async (listId, userId) => {
                 firstElement.mealPlans
             ) {
                 mealPlans = firstElement.mealPlans;
-                console.log(
-                    `📦 Successfully extracted ${mealPlans.length} meal plans from array response`
-                );
+            } else if (firstElement && firstElement.meals) {
+                // Handle alternative structure
+                mealPlans = firstElement.meals;
             } else {
-                console.error(
-                    "❌ Invalid structure in array response:",
-                    firstElement
+                // Fallback: treat entire array as meal plans if it contains meal objects
+                mealPlans = response.data.filter(
+                    (item) =>
+                        item.name && (item.description || item.instructions)
                 );
-                throw new Error("Invalid array response structure from n8n");
             }
         } else if (
             response.data &&
             response.data.success &&
             response.data.mealPlans
         ) {
-            // Direct object response
             mealPlans = response.data.mealPlans;
-            console.log(
-                `📦 Successfully extracted ${mealPlans.length} meal plans from object response`
-            );
+        } else if (response.data && response.data.meals) {
+            mealPlans = response.data.meals;
         } else {
-            console.error("❌ Invalid response structure:", response.data);
-            throw new Error("Invalid response format from n8n workflow");
+            console.error(
+                "❌ Unexpected response structure:",
+                JSON.stringify(response.data, null, 2)
+            );
+            throw new Error("Invalid response structure from n8n workflow");
         }
 
-        // Final validation
+        // Final validation and normalization
         if (!Array.isArray(mealPlans) || mealPlans.length === 0) {
             console.error("❌ No valid meal plans found:", mealPlans);
             throw new Error("No meal plans received from n8n workflow");
         }
 
+        // Normalize meal plan structure to match expected format
+        const normalizedMealPlans = mealPlans.map((meal, index) => ({
+            name: meal.name || `Meal ${index + 1}`,
+            description: meal.description || "",
+            ingredients: meal.ingredients || meal.ingredientsUsed || [],
+            instructions: Array.isArray(meal.instructions)
+                ? meal.instructions.join(" ")
+                : meal.instructions || "",
+            prepTime: meal.prepTime || "Not specified",
+            cookTime: meal.cookTime || "Not specified",
+            difficulty: meal.difficulty || "Medium",
+            nutritionHighlights: meal.nutritionHighlights || [],
+            servings: meal.servings || 2,
+            cookingMethod: meal.cookingMethod || "Various",
+        }));
+
         // Save to database
-        list.mealPlans = mealPlans;
+        list.mealPlans = normalizedMealPlans;
         await list.save();
 
         console.log(
-            `💾 Successfully saved ${mealPlans.length} meal plans to database`
+            `💾 Successfully saved ${normalizedMealPlans.length} meal plans to database`
         );
         console.log(
             `🎯 Meal plan names:`,
-            mealPlans.map((meal) => meal.name)
+            normalizedMealPlans.map((meal) => meal.name)
         );
 
-        return mealPlans;
+        return normalizedMealPlans;
     } catch (error) {
         console.error("❌ Error in generateMealPlansForList:", error.message);
 
