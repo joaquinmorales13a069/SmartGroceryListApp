@@ -2,7 +2,11 @@ import React, { useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 
-export default function UserPasswordForm({ user, setUser }) {
+export default function UserPasswordForm({
+    user,
+    setUser,
+    isAdminEdit = false,
+}) {
     const [form, setForm] = useState({
         currentPassword: "",
         newPassword: "",
@@ -18,20 +22,27 @@ export default function UserPasswordForm({ user, setUser }) {
         e.preventDefault();
         setLoading(true);
         try {
-            const token = localStorage.getItem("authToken");
-            const payload = {
-                currentPassword: form.currentPassword,
-                newPassword: form.newPassword,
-            };
-            const res = await axios.patch(
-                "http://localhost:5000/api/users/me",
-                payload,
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                }
-            );
-            setUser(res.data.user);
-            toast.success("Password updated!");
+            if (isAdminEdit) {
+                // For admin editing, directly call the setUser function passed as prop
+                // Only send the new password for admin password changes
+                await setUser({ newPassword: form.newPassword });
+            } else {
+                // For regular user editing, use the existing logic
+                const token = localStorage.getItem("authToken");
+                const payload = {
+                    currentPassword: form.currentPassword,
+                    newPassword: form.newPassword,
+                };
+                const res = await axios.patch(
+                    "http://localhost:5000/api/users/me",
+                    payload,
+                    {
+                        headers: { Authorization: `Bearer ${token}` },
+                    }
+                );
+                setUser(res.data.user);
+                toast.success("Password updated!");
+            }
             setForm({ currentPassword: "", newPassword: "" });
         } catch (err) {
             toast.error(
@@ -44,19 +55,21 @@ export default function UserPasswordForm({ user, setUser }) {
 
     return (
         <form className="grid grid-cols-1 gap-6" onSubmit={handleSubmit}>
-            <input
-                type="password"
-                name="currentPassword"
-                placeholder="Current Password"
-                className="w-full border border-[#76C893] rounded-lg px-4 py-2 text-[#333333] bg-transparent outline-none"
-                value={form.currentPassword}
-                onChange={handleChange}
-                required
-            />
+            {!isAdminEdit && (
+                <input
+                    type="password"
+                    name="currentPassword"
+                    placeholder="Current Password"
+                    className="w-full border border-[#76C893] rounded-lg px-4 py-2 text-[#333333] bg-transparent outline-none"
+                    value={form.currentPassword}
+                    onChange={handleChange}
+                    required={!isAdminEdit}
+                />
+            )}
             <input
                 type="password"
                 name="newPassword"
-                placeholder="New Password"
+                placeholder={isAdminEdit ? "New Password" : "New Password"}
                 className="w-full border border-[#76C893] rounded-lg px-4 py-2 text-[#333333] bg-transparent outline-none"
                 value={form.newPassword}
                 onChange={handleChange}
@@ -71,7 +84,11 @@ export default function UserPasswordForm({ user, setUser }) {
                         : "bg-[#76C893] hover:bg-[#FFB74D]"
                 }`}
             >
-                {loading ? "Saving..." : "Change Password"}
+                {loading
+                    ? "Saving..."
+                    : isAdminEdit
+                    ? "Change Password"
+                    : "Change Password"}
             </button>
         </form>
     );

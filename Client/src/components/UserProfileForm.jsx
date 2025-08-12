@@ -2,7 +2,11 @@ import React, { useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 
-export default function UserProfileForm({ user, setUser }) {
+export default function UserProfileForm({
+    user,
+    setUser,
+    isAdminEdit = false,
+}) {
     const [form, setForm] = useState({
         firstName: user.firstName || "",
         lastName: user.lastName || "",
@@ -23,19 +27,25 @@ export default function UserProfileForm({ user, setUser }) {
         e.preventDefault();
         setLoading(true);
         try {
-            const token = localStorage.getItem("authToken");
-            const payload = { ...form };
-            if (form.email !== user.email)
-                payload.currentEmail = form.currentEmail;
-            const res = await axios.patch(
-                "http://localhost:5000/api/users/me",
-                payload,
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                }
-            );
-            setUser(res.data.user);
-            toast.success("Profile updated!");
+            if (isAdminEdit) {
+                // For admin editing, directly call the setUser function passed as prop
+                await setUser(form);
+            } else {
+                // For regular user editing, use the existing logic
+                const token = localStorage.getItem("authToken");
+                const payload = { ...form };
+                if (form.email !== user.email)
+                    payload.currentEmail = form.currentEmail;
+                const res = await axios.patch(
+                    "http://localhost:5000/api/users/me",
+                    payload,
+                    {
+                        headers: { Authorization: `Bearer ${token}` },
+                    }
+                );
+                setUser(res.data.user);
+                toast.success("Profile updated!");
+            }
         } catch (err) {
             toast.error(err.response?.data?.message || "Update failed");
         } finally {
@@ -100,7 +110,7 @@ export default function UserProfileForm({ user, setUser }) {
                     onChange={handleChange}
                     required
                 />
-                {form.email !== user.email && (
+                {!isAdminEdit && form.email !== user.email && (
                     <div className="mt-2">
                         <label
                             htmlFor="currentEmail"
