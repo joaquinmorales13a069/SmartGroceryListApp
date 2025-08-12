@@ -10,10 +10,11 @@ const app = express();
 dotenv.config();
 
 // Middleware for CORS
+const rawOrigins = process.env.CORS_ORIGINS || "http://localhost:5173,http://localhost:5174";
+const allowedOrigins = rawOrigins === "*" ? "*" : rawOrigins.split(",");
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:5174"],
-
+    origin: allowedOrigins === "*" ? "*" : allowedOrigins,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })

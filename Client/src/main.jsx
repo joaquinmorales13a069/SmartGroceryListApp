@@ -14,6 +14,7 @@ import GroceryList from "./components/dashboard/GroceryList.jsx";
 import UserSettings from "./components/dashboard/UserSettings.jsx";
 import ListAllItems from "./components/dashboard/ListAllItems.jsx";
 import ListAllUsers from "./components/dashboard/ListAllUsers.jsx";
+import setupAxios from "./utils/setupAxios.js";
 
 createRoot(document.getElementById("root")).render(
     <StrictMode>
