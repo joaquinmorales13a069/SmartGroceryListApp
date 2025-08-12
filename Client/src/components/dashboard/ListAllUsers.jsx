@@ -107,14 +107,43 @@ export default function ListAllUsers() {
         }
     };
 
+    const handleUserTypeUpdate = async (userType) => {
+        try {
+            const token = localStorage.getItem("authToken");
+            await axios.patch(
+                `http://localhost:5000/api/users/${editingUser._id}`,
+                { userType },
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            );
+
+            toast.success(`User role updated to ${userType} successfully!`);
+            setEditingUser(null);
+            setEditMode("profile");
+            fetchUsers();
+        } catch (error) {
+            toast.error("Failed to update user role");
+            console.error("Error updating user role:", error);
+        }
+    };
+
     const getStatusBadge = (user) => {
         if (user.deleted) {
             return (
                 <span className="px-2 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded-full">
-                    Deleted
+                    Disabled
                 </span>
             );
         }
+        return (
+            <span className="px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">
+                Active
+            </span>
+        );
+    };
+
+    const getUserTypeBadge = (user) => {
         if (user.userType === "admin") {
             return (
                 <span className="px-2 py-1 text-xs font-semibold bg-purple-100 text-purple-800 rounded-full">
@@ -123,8 +152,8 @@ export default function ListAllUsers() {
             );
         }
         return (
-            <span className="px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">
-                Active
+            <span className="px-2 py-1 text-xs font-semibold bg-blue-100 text-blue-800 rounded-full">
+                User
             </span>
         );
     };
@@ -191,6 +220,9 @@ export default function ListAllUsers() {
                                                         Status
                                                     </th>
                                                     <th className="text-left py-3 px-4 font-semibold text-[#333333]">
+                                                        User Type
+                                                    </th>
+                                                    <th className="text-left py-3 px-4 font-semibold text-[#333333]">
                                                         Actions
                                                     </th>
                                                 </tr>
@@ -236,6 +268,11 @@ export default function ListAllUsers() {
                                                         </td>
                                                         <td className="py-3 px-4">
                                                             {getStatusBadge(
+                                                                user
+                                                            )}
+                                                        </td>
+                                                        <td className="py-3 px-4">
+                                                            {getUserTypeBadge(
                                                                 user
                                                             )}
                                                         </td>
@@ -360,11 +397,70 @@ export default function ListAllUsers() {
                                 />
                             )}
                             {editMode === "security" && (
-                                <UserPasswordForm
-                                    user={editingUser}
-                                    setUser={handlePasswordUpdate}
-                                    isAdminEdit={true}
-                                />
+                                <div className="space-y-6">
+                                    <UserPasswordForm
+                                        user={editingUser}
+                                        setUser={handlePasswordUpdate}
+                                        isAdminEdit={true}
+                                    />
+
+                                    <div className="border-t border-gray-200 pt-6">
+                                        <h4 className="text-lg font-semibold text-[#333333] mb-4">
+                                            User Role Management
+                                        </h4>
+                                        <div className="space-y-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-[#333333] mb-2">
+                                                    Current Role:{" "}
+                                                    {editingUser.userType ===
+                                                    "admin"
+                                                        ? "Admin"
+                                                        : "User"}
+                                                </label>
+                                                <div className="flex gap-4">
+                                                    <button
+                                                        onClick={() =>
+                                                            handleUserTypeUpdate(
+                                                                "user"
+                                                            )
+                                                        }
+                                                        disabled={
+                                                            editingUser.userType ===
+                                                            "user"
+                                                        }
+                                                        className={`px-4 py-2 rounded-lg font-semibold transition-colors duration-200 ${
+                                                            editingUser.userType ===
+                                                            "user"
+                                                                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                                                : "bg-blue-500 text-white hover:bg-blue-600"
+                                                        }`}
+                                                    >
+                                                        Make Regular User
+                                                    </button>
+                                                    <button
+                                                        onClick={() =>
+                                                            handleUserTypeUpdate(
+                                                                "admin"
+                                                            )
+                                                        }
+                                                        disabled={
+                                                            editingUser.userType ===
+                                                            "admin"
+                                                        }
+                                                        className={`px-4 py-2 rounded-lg font-semibold transition-colors duration-200 ${
+                                                            editingUser.userType ===
+                                                            "admin"
+                                                                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                                                : "bg-purple-500 text-white hover:bg-purple-600"
+                                                        }`}
+                                                    >
+                                                        Make Admin
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             )}
                         </div>
                     </div>

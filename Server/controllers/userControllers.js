@@ -93,6 +93,7 @@ export const signup = async (req, res) => {
             {
                 userId: savedUser._id,
                 email: savedUser.email,
+                userType: savedUser.userType,
             },
             process.env.JWT_SECRET || "fallback_secret_key", // Use environment variable for JWT secret
             { expiresIn: "7d" } // Token expires in 7 days
@@ -178,6 +179,7 @@ export const login = async (req, res) => {
             {
                 userId: user._id,
                 email: user.email,
+                userType: user.userType,
             },
             process.env.JWT_SECRET || "fallback_secret_key",
             { expiresIn: "7d" }
@@ -256,35 +258,29 @@ export const updateMe = async (req, res) => {
         // If changing email, require confirmation of current email
         if (email && email !== user.email) {
             if (!currentEmail || currentEmail !== user.email) {
-                return res
-                    .status(400)
-                    .json({
-                        success: false,
-                        message: "Current email confirmation required",
-                    });
+                return res.status(400).json({
+                    success: false,
+                    message: "Current email confirmation required",
+                });
             }
             user.email = email.toLowerCase().trim();
         }
         // If changing password, require current password
         if (newPassword) {
             if (!currentPassword)
-                return res
-                    .status(400)
-                    .json({
-                        success: false,
-                        message: "Current password required",
-                    });
+                return res.status(400).json({
+                    success: false,
+                    message: "Current password required",
+                });
             const isValid = await bcrypt.compare(
                 currentPassword,
                 user.password
             );
             if (!isValid)
-                return res
-                    .status(401)
-                    .json({
-                        success: false,
-                        message: "Current password incorrect",
-                    });
+                return res.status(401).json({
+                    success: false,
+                    message: "Current password incorrect",
+                });
             user.password = await bcrypt.hash(newPassword, 10);
         }
         if (firstName) user.firstName = firstName.trim();
@@ -320,10 +316,13 @@ export const deleteMe = async (req, res) => {
 // ADMIN: GET /api/users - List all users
 export const listUsers = async (req, res) => {
     try {
-        if (!isAdmin(req.user))
+        // Check if user is admin using JWT token data
+        if (!isAdmin(req.user)) {
             return res
                 .status(403)
                 .json({ success: false, message: "Admin only" });
+        }
+
         const users = await User.find({ deleted: { $ne: true } });
         res.json({ success: true, users: users.map(filterUser) });
     } catch (err) {
@@ -334,10 +333,13 @@ export const listUsers = async (req, res) => {
 // ADMIN: POST /api/users - Create new user
 export const adminCreateUser = async (req, res) => {
     try {
-        if (!isAdmin(req.user))
+        // Check if user is admin using JWT token data
+        if (!isAdmin(req.user)) {
             return res
                 .status(403)
                 .json({ success: false, message: "Admin only" });
+        }
+
         const {
             firstName,
             lastName,
@@ -360,21 +362,17 @@ export const adminCreateUser = async (req, res) => {
             !height ||
             !favouriteMeal
         ) {
-            return res
-                .status(400)
-                .json({
-                    success: false,
-                    message: "All required fields must be provided",
-                });
+            return res.status(400).json({
+                success: false,
+                message: "All required fields must be provided",
+            });
         }
         const existingUser = await User.findOne({ email });
         if (existingUser)
-            return res
-                .status(400)
-                .json({
-                    success: false,
-                    message: "User with this email already exists",
-                });
+            return res.status(400).json({
+                success: false,
+                message: "User with this email already exists",
+            });
         const hashedPassword = await bcrypt.hash(password, 10);
         const userData = {
             firstName: firstName.trim(),
@@ -399,10 +397,13 @@ export const adminCreateUser = async (req, res) => {
 // ADMIN: GET /api/users/:id - Get user by ID
 export const getUserById = async (req, res) => {
     try {
-        if (!isAdmin(req.user))
+        // Check if user is admin using JWT token data
+        if (!isAdmin(req.user)) {
             return res
                 .status(403)
                 .json({ success: false, message: "Admin only" });
+        }
+
         const user = await User.findById(req.params.id);
         if (!user || user.deleted)
             return res
@@ -417,10 +418,13 @@ export const getUserById = async (req, res) => {
 // ADMIN: PATCH /api/users/:id - Update any user (can promote/demote, edit info)
 export const adminUpdateUser = async (req, res) => {
     try {
-        if (!isAdmin(req.user))
+        // Check if user is admin using JWT token data
+        if (!isAdmin(req.user)) {
             return res
                 .status(403)
                 .json({ success: false, message: "Admin only" });
+        }
+
         const user = await User.findById(req.params.id);
         if (!user || user.deleted)
             return res
@@ -459,10 +463,13 @@ export const adminUpdateUser = async (req, res) => {
 // ADMIN: PATCH /api/users/:id/type - Promote/demote userType
 export const adminChangeUserType = async (req, res) => {
     try {
-        if (!isAdmin(req.user))
+        // Check if user is admin using JWT token data
+        if (!isAdmin(req.user)) {
             return res
                 .status(403)
                 .json({ success: false, message: "Admin only" });
+        }
+
         const user = await User.findById(req.params.id);
         if (!user || user.deleted)
             return res
@@ -484,10 +491,13 @@ export const adminChangeUserType = async (req, res) => {
 // ADMIN: DELETE /api/users/:id - Soft delete any user
 export const adminDeleteUser = async (req, res) => {
     try {
-        if (!isAdmin(req.user))
+        // Check if user is admin using JWT token data
+        if (!isAdmin(req.user)) {
             return res
                 .status(403)
                 .json({ success: false, message: "Admin only" });
+        }
+
         const user = await User.findById(req.params.id);
         if (!user || user.deleted)
             return res

@@ -37,6 +37,7 @@ const createAdminUser = async () => {
             console.log("Email:", adminUserData.email);
             console.log("Password:", adminUserData.password);
             console.log("User ID:", existingAdmin._id);
+            console.log("User Type:", existingAdmin.userType);
             return;
         }
 
