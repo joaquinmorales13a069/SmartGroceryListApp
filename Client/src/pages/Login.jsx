@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaUser, FaLock } from "react-icons/fa";
+import { MdRestaurant } from "react-icons/md";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -158,9 +159,21 @@ export default function Login() {
     return (
         <div className="min-h-screen flex items-center justify-center bg-[#F9F5EF] p-4">
             <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-md">
-                <h2 className="text-2xl font-bold text-[#333333] mb-6 text-center">
-                    Smart Grocery AI Login
-                </h2>
+                <div className="flex flex-col items-center mb-6">
+                    <div className="flex items-center gap-2">
+                        <MdRestaurant className="text-2xl text-emerald-600" />
+                        <h1 className="text-2xl font-bold text-gray-800">
+                            <span className="text-emerald-600">dAI</span>
+                            <span className="text-gray-700">licious</span>
+                        </h1>
+                    </div>
+                    <p className="text-sm text-gray-500 mt-1">
+                        Smart Grocery Planning
+                    </p>
+                    <h2 className="text-lg md:text-xl font-semibold text-[#333333] mt-2">
+                        Login to your account
+                    </h2>
+                </div>
                 <form
                     className="grid grid-cols-1 gap-6"
                     onSubmit={handleSubmit}

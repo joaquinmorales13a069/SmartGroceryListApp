@@ -12,6 +12,7 @@ import {
 import { Link } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { MdRestaurant } from "react-icons/md";
 
 export default function Signup() {
     const navigate = useNavigate();
@@ -173,9 +174,21 @@ export default function Signup() {
     return (
         <div className="min-h-screen bg-[#F9F5EF] flex items-center justify-center p-6">
             <div className="w-full max-w-3xl bg-white rounded-2xl shadow-lg p-8">
-                <h2 className="text-2xl font-bold text-[#333333] mb-6 text-center">
-                    Create Your Account
-                </h2>
+                <div className="flex flex-col items-center mb-6">
+                    <div className="flex items-center gap-2">
+                        <MdRestaurant className="text-2xl text-emerald-600" />
+                        <h1 className="text-2xl font-bold text-gray-800">
+                            <span className="text-emerald-600">dAI</span>
+                            <span className="text-gray-700">licious</span>
+                        </h1>
+                    </div>
+                    <p className="text-sm text-gray-500 mt-1">
+                        Smart Grocery Planning
+                    </p>
+                    <h2 className="text-lg md:text-xl font-semibold text-[#333333] mt-2">
+                        Create a new account
+                    </h2>
+                </div>
                 <form
                     className="grid grid-cols-1 md:grid-cols-2 gap-6"
                     onSubmit={handleSubmit}
