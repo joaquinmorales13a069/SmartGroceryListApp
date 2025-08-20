@@ -68,23 +68,27 @@ npm install
 
 ### 3. Environment Configuration
 
-Create a `.env` file in the `Server` directory:
+Recommended (final assessment .zip):
 
-```bash
-cd Server
-touch .env
-```
+-   The `.env` file is already provided inside `Server/` in the final assessment zip. No changes or file creation are needed to run the project as graded.
+-   Ensure you extract the zip preserving the folder structure so that `Server/.env` is present.
+-   Do not commit this file to version control.
 
-Add the following environment variables to the `.env` file:
+Alternative (use your own local MongoDB and secrets):
+
+If you prefer to configure your own environment, you can create a `.env` file in the `Server` directory with the following variables:
 
 ```env
 PORT=5000
 MONGODB_URI=mongodb://localhost:27017/smart-grocery-app
-JWT_SECRET=your_jwt_secret_key_here
+JWT_SECRET=your_own_secure_random_string
 NODE_ENV=development
 ```
 
-**Note**: Replace `your_jwt_secret_key_here` with a secure random string for JWT token signing.
+Notes:
+
+-   You can use a local MongoDB instance for development by keeping the `MONGODB_URI` above, or point it to MongoDB Atlas by replacing the connection string.
+-   Replace `JWT_SECRET` with a strong, unique value that you keep private.
 
 ### 4. Database Setup
 

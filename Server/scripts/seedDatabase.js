@@ -1517,14 +1517,23 @@ const generateProducts = () => {
         ].includes(b.name)
     );
 
-    // Combine pantry-only categories
-    const allItems = [
-        ...pantryGrains,
-        ...pantryNuts,
-        ...pantryCondiments,
-        ...pantrySnacks,
-        ...pantryBeverages,
+    // Build a combined catalog with meats included and ensure uniqueness (max 120)
+    const combinedCatalog = [
+        ...fruits,
+        ...vegetables,
+        ...dairy,
+        ...meat,
+        ...grains,
+        ...nuts,
+        ...beverages,
+        ...condiments,
+        ...snacks,
     ];
+    const uniqueByName = new Map();
+    for (const it of combinedCatalog) {
+        if (!uniqueByName.has(it.name)) uniqueByName.set(it.name, it);
+    }
+    const allItems = Array.from(uniqueByName.values()).slice(0, 120);
 
     // Helper to get realistic shelf life in days for pantry items
     const getShelfLifeDays = (name) => {
@@ -1535,6 +1544,26 @@ const generateProducts = () => {
         // Grains & dry goods
         if (["rice", "quinoa", "oatmeal", "pasta"].includes(n))
             return rand(365, 730);
+
+        // Breads and baked goods (assume frozen/preserved packaging)
+        if (
+            n.includes("bread") ||
+            n.includes("bagel") ||
+            n.includes("tortilla") ||
+            n.includes("english muffin") ||
+            n.includes("croissant") ||
+            n.includes("pita") ||
+            n.includes("sourdough") ||
+            n.includes("rye") ||
+            n.includes("cornbread") ||
+            n.includes("focaccia") ||
+            n.includes("naan") ||
+            n.includes("challah") ||
+            n.includes("ciabatta") ||
+            n.includes("brioche") ||
+            n.includes("flatbread")
+        )
+            return rand(30, 90);
 
         // Nuts & seeds
         if (
@@ -1580,6 +1609,16 @@ const generateProducts = () => {
         )
             return rand(365, 730);
         if (
+            n.includes("orange juice") ||
+            n.includes("apple juice") ||
+            n.includes("grape juice") ||
+            n.includes("cranberry juice") ||
+            n.includes("tomato juice") ||
+            n.includes("lemonade") ||
+            n.includes("iced tea")
+        )
+            return rand(180, 365);
+        if (
             n.includes("almond milk") ||
             n.includes("soy milk") ||
             n.includes("oat milk") ||
@@ -1615,13 +1654,105 @@ const generateProducts = () => {
             return rand(365, 730);
         if (n.includes("beef jerky")) return rand(365, 730);
 
+        // Meats & fish (assume frozen/vacuum sealed)
+        if (n.includes("chicken breast") || n.includes("turkey breast"))
+            return rand(60, 180);
+        if (
+            n.includes("ground beef") ||
+            n.includes("beef steak") ||
+            n.includes("pork chop") ||
+            n.includes("lamb chop") ||
+            n.includes("veal cutlet")
+        )
+            return rand(60, 180);
+        if (
+            n.includes("salmon fillet") ||
+            n.includes("tuna steak") ||
+            n.includes("cod fillet") ||
+            n.includes("tilapia fillet") ||
+            n.includes("mahi mahi") ||
+            n.includes("shrimp") ||
+            n.includes("scallops") ||
+            n.includes("crab meat") ||
+            n.includes("lobster tail")
+        )
+            return rand(60, 150);
+        if (n.includes("bacon") || n.includes("sausage") || n.includes("ham"))
+            return rand(90, 240);
+
+        // Dairy
+        if (n === "milk") return rand(30, 60);
+        if (n.includes("yogurt")) return rand(30, 60);
+        if (
+            n.includes("cheese") ||
+            n.includes("parmesan") ||
+            n.includes("feta") ||
+            n.includes("brie") ||
+            n.includes("gouda") ||
+            n.includes("ricotta") ||
+            n.includes("swiss") ||
+            n.includes("cream cheese") ||
+            n.includes("cottage cheese") ||
+            n.includes("sour cream") ||
+            n.includes("heavy cream")
+        )
+            return rand(60, 240);
+        if (n === "butter") return rand(180, 365);
+
+        // Fruits & vegetables (packaged/canned/dried assumptions for >=15 days)
+        if (
+            [
+                "apple",
+                "banana",
+                "orange",
+                "strawberry",
+                "blueberry",
+                "grape",
+                "pineapple",
+                "mango",
+                "peach",
+                "pear",
+                "kiwi",
+                "lemon",
+                "lime",
+                "avocado",
+                "coconut",
+                "watermelon",
+                "cantaloupe",
+                "honeydew",
+                "plum",
+                "apricot",
+                "carrot",
+                "broccoli",
+                "spinach",
+                "tomato",
+                "lettuce",
+                "cucumber",
+                "bell pepper",
+                "onion",
+                "garlic",
+                "potato",
+                "sweet potato",
+                "cauliflower",
+                "asparagus",
+                "zucchini",
+                "eggplant",
+                "mushroom",
+                "corn",
+                "peas",
+                "green beans",
+                "brussels sprouts",
+            ].includes(n)
+        )
+            return rand(15, 45);
+
         // Default pantry item shelf life
         return 365;
     };
 
-    // Generate 120 products with batch numbers and realistic expiry dates (>= 15 days)
-    for (let i = 0; i < 120; i++) {
-        const item = allItems[i % allItems.length];
+    // Generate exactly 120 unique products with batch numbers and realistic expiry dates (>= 15 days)
+    for (let i = 0; i < allItems.length; i++) {
+        const item = allItems[i];
         const batchNumber = `${item.name.substring(0, 3).toUpperCase()}${String(
             i + 1
         ).padStart(3, "0")}`;
