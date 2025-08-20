@@ -5,7 +5,7 @@ import Item from "../models/itemModel.js";
 // Load environment variables
 dotenv.config();
 
-// Generate 120 diverse grocery products
+// Generate 120 pantry products with realistic expiry dates
 const generateProducts = () => {
     const products = [];
 
@@ -1485,44 +1485,154 @@ const generateProducts = () => {
         },
     ];
 
-    // Combine all categories
+    // Helper: select pantry-only subsets from existing categories
+    const pantryGrains = grains.filter((g) =>
+        ["rice", "pasta", "quinoa", "oatmeal"].includes(g.name)
+    );
+
+    const pantryNuts = [...nuts];
+
+    const pantryCondiments = condiments.filter(
+        (c) => !["hummus", "guacamole"].includes(c.name)
+    );
+
+    const pantrySnacks = snacks.filter(
+        (s) => !["ice cream", "yogurt cup", "cheese stick"].includes(s.name)
+    );
+
+    const pantryBeverages = beverages.filter((b) =>
+        [
+            "coffee",
+            "green tea",
+            "hot chocolate",
+            "energy drink",
+            "sports drink",
+            "sparkling water",
+            "mineral water",
+            "almond milk",
+            "soy milk",
+            "oat milk",
+            "rice milk",
+            "coconut milk",
+        ].includes(b.name)
+    );
+
+    // Combine pantry-only categories
     const allItems = [
-        ...fruits,
-        ...vegetables,
-        ...dairy,
-        ...meat,
-        ...grains,
-        ...nuts,
-        ...beverages,
-        ...condiments,
-        ...snacks,
+        ...pantryGrains,
+        ...pantryNuts,
+        ...pantryCondiments,
+        ...pantrySnacks,
+        ...pantryBeverages,
     ];
 
-    // Generate 120 products with batch numbers and expiry dates
+    // Helper to get realistic shelf life in days for pantry items
+    const getShelfLifeDays = (name) => {
+        const n = name.toLowerCase();
+        const rand = (min, max) =>
+            Math.floor(Math.random() * (max - min + 1)) + min;
+
+        // Grains & dry goods
+        if (["rice", "quinoa", "oatmeal", "pasta"].includes(n))
+            return rand(365, 730);
+
+        // Nuts & seeds
+        if (
+            /(almond|walnut|cashew|peanut|pecan|pistachio|macadamia|hazelnut|brazil|pine nut|sunflower|pumpkin|chia|flax|sesame|hemp|poppy|quinoa seed|amaranth|millet)/.test(
+                n
+            )
+        )
+            return rand(180, 365);
+
+        // Condiments & sauces
+        if (n.includes("olive oil")) return rand(365, 730);
+        if (n.includes("peanut butter")) return rand(180, 365);
+        if (["ketchup", "mustard"].includes(n)) return rand(365, 730);
+        if (n.includes("soy sauce") || n.includes("hot sauce"))
+            return rand(730, 1460);
+        if (n.includes("mayonnaise")) return rand(180, 365);
+        if (n.includes("barbecue")) return rand(365, 730);
+        if (n.includes("ranch dressing") || n.includes("italian dressing"))
+            return rand(180, 365);
+        if (n === "honey") return rand(1825, 3650); // 5-10 years
+        if (n === "maple syrup") return rand(365, 730);
+        if (n === "jam" || n === "jelly") return rand(365, 730);
+        if (n.includes("nutella")) return rand(180, 365);
+        if (
+            n.includes("pesto") ||
+            n.includes("marinara") ||
+            n.includes("salsa")
+        )
+            return rand(365, 730);
+
+        // Beverages (shelf-stable)
+        if (
+            n.includes("coffee") ||
+            n.includes("green tea") ||
+            n.includes("hot chocolate")
+        )
+            return rand(365, 730);
+        if (
+            n.includes("energy drink") ||
+            n.includes("sports drink") ||
+            n.includes("sparkling water") ||
+            n.includes("mineral water")
+        )
+            return rand(365, 730);
+        if (
+            n.includes("almond milk") ||
+            n.includes("soy milk") ||
+            n.includes("oat milk") ||
+            n.includes("rice milk")
+        )
+            return rand(270, 365);
+        if (n.includes("coconut milk")) return rand(365, 730); // canned or shelf-pack
+
+        // Snacks & sweets
+        if (n.includes("chocolate bar")) return rand(180, 365);
+        if (
+            n.includes("potato chip") ||
+            n.includes("corn chip") ||
+            n.includes("tortilla chip") ||
+            n.includes("pretzel")
+        )
+            return rand(120, 240);
+        if (n.includes("popcorn")) return rand(365, 730);
+        if (
+            n.includes("crackers") ||
+            n.includes("cookies") ||
+            n.includes("granola bar") ||
+            n.includes("trail mix") ||
+            n.includes("protein bar") ||
+            n.includes("rice cake")
+        )
+            return rand(180, 365);
+        if (
+            n.includes("pudding cup") ||
+            n.includes("fruit snack") ||
+            n.includes("dried fruit")
+        )
+            return rand(365, 730);
+        if (n.includes("beef jerky")) return rand(365, 730);
+
+        // Default pantry item shelf life
+        return 365;
+    };
+
+    // Generate 120 products with batch numbers and realistic expiry dates (>= 15 days)
     for (let i = 0; i < 120; i++) {
         const item = allItems[i % allItems.length];
         const batchNumber = `${item.name.substring(0, 3).toUpperCase()}${String(
             i + 1
         ).padStart(3, "0")}`;
 
-        // Generate expiry date (some items don't have expiry dates)
-        let expiryDate = null;
-        if (
-            [
-                "milk",
-                "yogurt",
-                "cheese",
-                "egg",
-                "meat",
-                "fish",
-                "bread",
-                "juice",
-            ].some((type) => item.name.includes(type))
-        ) {
-            const daysFromNow = Math.floor(Math.random() * 30) + 1; // 1-30 days from now
-            expiryDate = new Date();
-            expiryDate.setDate(expiryDate.getDate() + daysFromNow);
-        }
+        // Generate expiry date for all pantry items
+        const minDays = 15;
+        let daysFromNow = getShelfLifeDays(item.name);
+        if (daysFromNow < minDays) daysFromNow = minDays;
+        const expiryDate = new Date();
+        expiryDate.setHours(0, 0, 0, 0);
+        expiryDate.setDate(expiryDate.getDate() + daysFromNow);
 
         // Some items are disabled (out of stock)
         const disabled = Math.random() < 0.05; // 5% chance of being disabled
@@ -1531,7 +1641,7 @@ const generateProducts = () => {
             name: item.name,
             price: Math.max(0.1, item.price + (Math.random() * 2 - 1) * 0.5), // Ensure price is never negative
             batchNumber: batchNumber,
-            expiryDate: expiryDate,
+            expiryDate,
             nutrition: {
                 calories: item.calories,
                 protein: item.protein,
